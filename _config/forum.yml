@@ -3,15 +3,15 @@ Name: forum
 ---
 Director:
   rules:
-    'ForumMemberProfile//$Action/$ID/$OtherID': 'ForumMemberProfile'
-Member:
+    'ForumMemberProfile//$Action/$ID/$OtherID': 'SilverStripe\Forum\Controller\ForumMemberProfile'
+SilverStripe\Security\Member:
   extensions:
-    ForumRole:
-      ForumRole
-Member_Validator:
+    SilverStripe\Forum\Extension\ForumRole:
+      SilverStripe\Forum\Extension\ForumRole
+SilverStripe\Security\Member_Validator:
   extensions:
-    ForumRole_Validator:
-      ForumRole_Validator
-Post:
+    SilverStripe\Forum\Form\ForumRoleValidator:
+      SilverStripe\Forum\Form\ForumRoleValidator
+SilverStripe\Forum\Model\Post:
   extensions:
-    - ForumSpamPostExtension
+    - SilverStripe\Forum\Extension\ForumSpamPostExtension

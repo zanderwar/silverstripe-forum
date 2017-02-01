@@ -1,4 +1,32 @@
 <?php
+
+namespace SilverStripe\Forum\Extension;
+
+use SilverStripe\Forum\Page\ForumHolder;
+use SilverStripe\ORM\DB;
+use SilverStripe\Security\Permission;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Forms\FileField;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\HeaderField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\EmailField;
+use SilverStripe\Forms\ConfirmedPasswordField;
+use SilverStripe\Forms\CompositeField;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\Security\Member;
+use SilverStripe\Assets\Image;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\View\Requirements;
+use SilverStripe\Core\Extension;
+use Zend_Locale;
+
 /**
  * ForumRole
  *
@@ -64,7 +92,7 @@ class ForumRole extends DataExtension
     );
 
     private static $has_one = array(
-        'Avatar' => 'Image'
+        'Avatar' => 'SilverStripe\\Assets\\Image'
     );
 
     private static $has_many = array(
@@ -203,7 +231,7 @@ class ForumRole extends DataExtension
             new CheckableOption('CompanyPublic', new TextField('Company', _t('ForumRole.COMPANY', 'Company')), true),
             new CheckableOption('CityPublic', new TextField('City', _t('ForumRole.CITY', 'City')), true),
             new CheckableOption("CountryPublic", new ForumCountryDropdownField("Country", _t('ForumRole.COUNTRY', 'Country')), true),
-            new CheckableOption("EmailPublic", new EmailField("Email", _t('ForumRole.EMAIL', 'Email'))),
+            new CheckableOption("EmailPublic", new EmailField("SilverStripe\\Control\\Email\\Email", _t('ForumRole.EMAIL', 'SilverStripe\\Control\\Email\\Email'))),
             new ConfirmedPasswordField("Password", _t('ForumRole.PASSWORD', 'Password')),
             $avatarField
         );
@@ -258,9 +286,9 @@ class ForumRole extends DataExtension
     public function getForumValidator($needPassword = true)
     {
         if ($needPassword) {
-            $validator = new RequiredFields("Nickname", "Email", "Password");
+            $validator = new RequiredFields("Nickname", "SilverStripe\\Control\\Email\\Email", "Password");
         } else {
-            $validator = new RequiredFields("Nickname", "Email");
+            $validator = new RequiredFields("Nickname", "SilverStripe\\Control\\Email\\Email");
         }
         $this->owner->extend('updateForumValidator', $validator);
 
@@ -291,7 +319,7 @@ class ForumRole extends DataExtension
     public function IsSuspended()
     {
         if ($this->owner->SuspendedUntil) {
-            return strtotime(SS_Datetime::now()->Format('Y-m-d')) < strtotime($this->owner->SuspendedUntil);
+            return strtotime(DBDatetime::now()->Format('Y-m-d')) < strtotime($this->owner->SuspendedUntil);
         } else {
             return false;
         }
@@ -357,7 +385,7 @@ class ForumRole extends DataExtension
     public function getFormattedAvatar()
     {
         $default = "forum/images/forummember_holder.gif";
-        $currentTheme = Config::inst()->get('SSViewer', 'theme');
+        $currentTheme = Config::inst()->get('SilverStripe\\View\\SSViewer', 'theme');
 
         if (file_exists('themes/' . $currentTheme . '_forum/images/forummember_holder.gif')) {
             $default = 'themes/' . $currentTheme . '_forum/images/forummember_holder.gif';
@@ -404,7 +432,7 @@ class ForumRole extends DataExtension
     public function ForumSuspensionMessage()
     {
         $msg = _t('ForumRole.SUSPENSIONNOTE', 'This forum account has been suspended.');
-        $adminEmail = Config::inst()->get('Email', 'admin_email');
+        $adminEmail = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
 
         if ($adminEmail) {
             $msg .= ' ' . sprintf(
@@ -413,70 +441,5 @@ class ForumRole extends DataExtension
             );
         }
         return $msg;
-    }
-}
-
-
-
-/**
- * ForumRole_Validator
- *
- * This class is used to validate the new fields added by the
- * {@link ForumRole} decorator in the CMS backend.
- */
-class ForumRole_Validator extends Extension
-{
-
-    /**
-     * Client-side validation code
-     *
-     * @param string $js The javascript validation code
-     * @return string Returns the needed javascript code for client-side
-     *                validation.
-     */
-    public function updateJavascript(&$js, &$form)
-    {
-
-        $formID = $form->FormName();
-        $passwordFieldName = $form->dataFieldByName('Password')->id();
-
-        $passwordConfirmField = $form->dataFieldByName('ConfirmPassword');
-        if (!$passwordConfirmField) {
-            return;
-        }
-
-        $passwordConfirmFieldName = $passwordConfirmField->id();
-
-        $passwordcheck = <<<JS
-Behaviour.register({
-	"#$formID": {
-		validatePasswordConfirmation: function() {
-			var passEl = _CURRENT_FORM.elements['Password'];
-			var confEl = _CURRENT_FORM.elements['ConfirmPassword'];
-
-			if(passEl.value == confEl.value) {
-			  clearErrorMessage(confEl.parentNode);
-				return true;
-			} else {
-				validationError(confEl, "Passwords don't match.", "error");
-				return false;
-			}
-		},
-		initialize: function() {
-			var passEl = $('$passwordFieldName');
-			var confEl = $('$passwordConfirmFieldName');
-
-			confEl.value = passEl.value;
-		}
-	}
-});
-JS;
-        Requirements::customScript(
-            $passwordcheck,
-            'func_validatePasswordConfirmation'
-        );
-
-        $js .= "\$('$formID').validatePasswordConfirmation();";
-        return $js;
     }
 }

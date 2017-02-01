@@ -1,5 +1,13 @@
 <?php
 
+namespace SilverStripe\Forum\Form;
+
+use SilverStripe\Security\Member;
+use SilverStripe\i18n\i18n;
+use SilverStripe\Forms\DropdownField;
+use Zend_Locale;
+use Collator;
+
 /**
  * A simple extension to dropdown field, pre-configured to list countries.
  * It will default to the country of the current visitor.
@@ -13,12 +21,12 @@ class ForumCountryDropdownField extends DropdownField
     /**
      * @var bool - Should we default the dropdown to the region determined from the user's locale?
      */
-    private static $default_to_locale = true;
+    private static $defaultToLocale = true;
 
     /**
      * @var string - The region code to default to if default_to_locale is set to false, or we can't determine a region from a locale
      */
-    private static $default_country = 'NZ';
+    private static $defaultCountry = 'NZ';
 
     /**
      * Get the locale of the Member, or if we're not logged in or don't have a locale, use the default one
@@ -32,7 +40,15 @@ class ForumCountryDropdownField extends DropdownField
         return i18n::get_locale();
     }
 
-    public function __construct($name, $title = null, $source = null, $value = "", $form = null)
+    /**
+     * ForumCountryDropdownField constructor.
+     *
+     * @param string $name
+     * @param null   $title
+     * @param null   $source
+     * @param string $value
+     */
+    public function __construct($name, $title = null, $source = null, $value = "")
     {
         if (!is_array($source)) {
             // Get a list of countries from Zend
@@ -52,9 +68,14 @@ class ForumCountryDropdownField extends DropdownField
             unset($source['ZZ']);
         }
 
-        parent::__construct($name, ($title===null) ? $name : $title, $source, $value, $form);
+        parent::__construct($name, ($title===null) ? $name : $title, $source, $value);
     }
 
+    /**
+     * @param array $properties
+     *
+     * @return string
+     */
     public function Field($properties = array())
     {
         $source = $this->getSource();

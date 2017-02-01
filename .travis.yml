@@ -9,7 +9,7 @@ php:
 
 env:
   global:
-    - CORE_RELEASE=3.1
+    - CORE_RELEASE=4
     - MODULE_PATH=forum
     - COVERAGE=0
   matrix:

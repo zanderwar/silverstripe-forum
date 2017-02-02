@@ -1,11 +1,11 @@
-Group:
+SilverStripe\Security\Group:
    members:
       Title: Forum Members
       Code: forum-members
    admins:
       Title: Administrators
       Code: administrators
-Member:
+SilverStripe\Security\Member:
     test1:
         Nickname: test1
         FirstName: Test
@@ -38,7 +38,7 @@ ForumHolder:
       ForbiddenWords: shit,fuck
    fh2:
       Title: Forum 2
-ForumCategory:
+SilverStripe\Forum\Model\ForumCategory:
    fh1cat1:
       Title: cat1
       ForumHolderID: =>ForumHolder.fh
@@ -51,7 +51,7 @@ ForumCategory:
    fh2cat4:
       Title: cat4
       ForumHolderID: =>ForumHolder.fh2
-Forum:
+SilverStripe\Forum\Forum:
    general:
       Title: General Discussion
       ParentID: =>ForumHolder.fh

@@ -1,7 +1,7 @@
-Permission:
+SilverStripe\Security\Permission:
 	admin:
 		Code: ADMIN
-Group:
+SilverStripe\Security\Group:
 	members:
 		Title: Forum Members
 		Code: forum-members
@@ -12,7 +12,7 @@ Group:
 	special:
 		Title: Special Members who can see a forum
 		Code: special-group
-Member:
+SilverStripe\Security\Member:
 	test1:
 		Nickname: test1
 		FirstName: Test
@@ -81,7 +81,7 @@ ForumHolder:
 	    Title: Forum holder in which forums are logged-in-user-only
 	    CanViewType: LoggedInUsers
 		CanPostType: LoggedInUsers
-ForumCategory:
+SilverStripe\Forum\Model\ForumCategory:
 	fh1cat1:
 		Title: cat1
 		StackableOrder: 1
@@ -154,7 +154,7 @@ Forum:
 	    ParentID: =>ForumHolder.loggedInUserOnly
 	    CanViewType: Inherit
 	    CanPostType: Inherit
-ForumThread:
+SilverStripe\Forum\Model\ForumThread:
 	Thread1:
 		Title: Test Thread
 		NumViews: 10
@@ -184,14 +184,14 @@ ForumThread:
 	ThreadCreatedBySpammer:
 		Title: Thread Created By Spammer
 		Forum: =>Forum.general
-ForumThread_Subscription:
+SilverStripe\Forum\Model\ForumThreadSubscription:
 	Subscription1: 
 		Thread: =>ForumThread.Thread1
 		Member: =>Member.test1
 	Subscription2:
 		Thread: =>ForumThread.Thread1
 		Member: =>Member.test2
-Post:	
+SilverStripe\Forum\Model\Post:
 	SpamFirstPost:
 		Content: SPAM SPAM SPAM
 		Thread: =>ForumThread.ThreadCreatedBySpammer

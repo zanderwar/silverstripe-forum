@@ -1,6 +1,7 @@
 <?php
 namespace SilverStripe\Forum\Report;
 
+use SilverStripe\Forum\Model\Post;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
@@ -34,7 +35,7 @@ class ForumMonthlyPostsReport extends Report
         $postsQuery = new SQLSelect();
         $postsQuery->setFrom('"' . $postTable . '"');
         $postsQuery->setSelect(array(
-            'Month' => DB::getConn()->formattedDatetimeClause('"Created"', '%Y-%m'),
+            'Month' => DB::get_conn()->formattedDatetimeClause('"Created"', '%Y-%m'),
             'Posts' => 'COUNT("Created")'
         ));
         $postsQuery->setGroupBy('"Month"');

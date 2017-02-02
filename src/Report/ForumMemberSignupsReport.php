@@ -44,7 +44,7 @@ class ForumMemberSignupsReport extends Report
         $membersQuery = new SQLSelect();
         $membersQuery->setFrom('"' . $memberTable . '"');
         $membersQuery->setSelect(array(
-            'Month' => DB::getConn()->formattedDatetimeClause('"Created"', '%Y-%m'),
+            'Month' => DB::get_conn()->formattedDatetimeClause('"Created"', '%Y-%m'),
             'Signups' => 'COUNT("Created")'
         ));
         $membersQuery->setGroupBy('"Month"');

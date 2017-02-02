@@ -18,8 +18,15 @@
 	},
 	"require": {
 		"silverstripe/framework": "^4.0@dev",
-		"silverstripe/cms": "^4.0@dev"
+		"silverstripe/cms": "^4.0@dev",
+        "silverstripe-archive/silveerstripe-bbcodeparser": "dev-master"
 	},
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/zanderwar/silverstripe-bbcodeparser"
+      }
+    ],
 	"autoload": {
 		"psr-4": {
 			"SilverStripe\\Forum\\": "src/"

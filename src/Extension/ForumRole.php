@@ -2,8 +2,11 @@
 
 namespace SilverStripe\Forum\Extension;
 
+use SilverStripe\Control\Email\Email;
+use SilverStripe\Forms\Validator;
 use SilverStripe\Forum\Form\CheckableOption;
 use SilverStripe\Forum\Form\ForumCountryDropdownField;
+use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\Forum\Page\ForumHolderPageController;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
@@ -55,7 +58,7 @@ class ForumRole extends DataExtension
      */
     public function augmentDatabase()
     {
-        $exist = DB::tableList();
+        $exist = DB::table_list();
         if (!empty($exist) && array_search('ForumMember', $exist) !== false) {
             DB::query("UPDATE \"Member\", \"ForumMember\" " .
                 "SET \"Member\".\"ClassName\" = 'Member'," .
@@ -96,7 +99,7 @@ class ForumRole extends DataExtension
     );
 
     private static $has_one = array(
-        'Avatar' => 'SilverStripe\\Assets\\Image'
+        'Avatar' => Image::class
     );
 
     private static $has_many = array(
@@ -253,25 +256,25 @@ class ForumRole extends DataExtension
 
         if ($showIdentityURL) {
             $fieldset->insertBefore(
-                new ReadonlyField('IdentityURL', _t('ForumRole.OPENIDINAME', 'OpenID/i-name')),
-                'Password'
+                'Password',
+                new ReadonlyField('IdentityURL', _t('ForumRole.OPENIDINAME', 'OpenID/i-name'))
             );
             $fieldset->insertAfter(
+                'IdentityURL',
                 new LiteralField(
                     'PasswordOptionalMessage',
                     '<p>' . _t('ForumRole.PASSOPTMESSAGE', 'Since you provided an OpenID respectively an i-name the password is optional. If you enter one, you will be able to log in also with your e-mail address.') . '</p>'
-                ),
-                'IdentityURL'
+                )
             );
         }
 
         if ($this->owner->IsSuspended()) {
             $fieldset->insertAfter(
+                'Blurb',
                 new LiteralField(
                     'SuspensionNote',
                     '<p class="message warning suspensionWarning">' . $this->ForumSuspensionMessage() . '</p>'
-                ),
-                'Blurb'
+                )
             );
         }
 
@@ -410,7 +413,7 @@ class ForumRole extends DataExtension
         }
 
         //If Gravatar is enabled, allow the selection of the type of default Gravatar.
-        if ($holder = ForumHolder::get()->filter('AllowGravatars', 1)->first()) {
+        if ($holder = ForumHolderPage::get()->filter('AllowGravatars', 1)->first()) {
             // If the GravatarType is one of the special types, then set it otherwise use the
             //default image from above forummember_holder.gif
             if ($holder->GravatarType) {
@@ -436,7 +439,7 @@ class ForumRole extends DataExtension
     public function ForumSuspensionMessage()
     {
         $msg = _t('ForumRole.SUSPENSIONNOTE', 'This forum account has been suspended.');
-        $adminEmail = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
+        $adminEmail = Config::inst()->get(Email::class, 'admin_email');
 
         if ($adminEmail) {
             $msg .= ' ' . sprintf(

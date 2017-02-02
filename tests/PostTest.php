@@ -1,14 +1,35 @@
 <?php
 
+namespace SilverStripe\Forum\Tests;
+
+
+use SilverStripe\Security\SecurityToken;
+use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Security\Member;
+use SilverStripe\Forum\Model\Post;
+use SilverStripe\Dev\FunctionalTest;
+
+
+/**
+ * Class PostTest
+ * 
+ * @package SilverStripe\Forum\Tests
+ */
 class PostTest extends FunctionalTest
 {
 
-    static $fixture_file = "forum/tests/ForumTest.yml";
+    public static $fixtureFile = "forum/tests/ForumTest.yml";
 
     // fixes permission issues with these tests, we don't need to test versioning anyway.
     // without this, SiteTree::canView() would always return false even though CanViewType == Anyone.
-    static $use_draft_site = true;
+    public static $useDraftSite = true;
 
+    /** @var bool */
+    public $useToken;
+
+    /**
+     * Setup
+     */
     public function setUp()
     {
         parent::setUp();
@@ -17,6 +38,9 @@ class PostTest extends FunctionalTest
         $this->useToken = SecurityToken::is_enabled();
     }
 
+    /**
+     * Tear Down 
+     */
     public function tearDown()
     {
         parent::tearDown();
@@ -31,16 +55,23 @@ class PostTest extends FunctionalTest
 
     public function testPermissions()
     {
-        $member1 = $this->objFromFixture('Member', 'test1');
-        $member2 = $this->objFromFixture('Member', 'test2');
-        $moderator = $this->objFromFixture('Member', 'moderator');
-        $admin = $this->objFromFixture('Member', 'admin');
+        /** @var Member $member1 */
+        $member1 = $this->objFromFixture(Member::class, 'test1');
 
-        $postMember2 = $this->objFromFixture('Post', 'Post18');
+        /** @var Member $member2 */
+        $member2 = $this->objFromFixture(Member::class, 'test2');
+
+        /** @var Member $moderator */
+        $moderator = $this->objFromFixture(Member::class, 'moderator');
+
+        /** @var Member $admin */
+        $admin = $this->objFromFixture(Member::class, 'admin');
+
+        $postMember2 = $this->objFromFixture(Post::class, 'Post18');
 
         // read only thread post
         $member1->logIn();
-        $postReadonly = $this->objFromFixture('Post', 'ReadonlyThreadPost');
+        $postReadonly = $this->objFromFixture(Post::class, 'ReadonlyThreadPost');
         $this->assertFalse($postReadonly->canEdit()); // Even though it's user's own
         $this->assertTrue($postReadonly->canView());
         $this->assertFalse($postReadonly->canCreate());
@@ -77,61 +108,72 @@ class PostTest extends FunctionalTest
 
     public function testGetTitle()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
-        $reply = $this->objFromFixture('Post', 'Post2');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
+
+        /** @var Post $reply */
+        $reply = $this->objFromFixture(Post::class, 'Post2');
 
         $this->assertEquals($post->Title, "Test Thread");
         $this->assertEquals($reply->Title, "Re: Test Thread");
 
-        $first = $this->objFromFixture('Post', 'Post3');
+        $first = $this->objFromFixture(Post::class, 'Post3');
         $this->assertEquals($first->Title, 'Another Test Thread');
     }
 
     public function testIssFirstPost()
     {
-        $first = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $first */
+        $first = $this->objFromFixture(Post::class, 'Post1');
         $this->assertTrue($first->isFirstPost());
 
-        $notFirst = $this->objFromFixture('Post', 'Post2');
+        /** @var Post $notFirst */
+        $notFirst = $this->objFromFixture(Post::class, 'Post2');
         $this->assertFalse($notFirst->isFirstPost());
     }
 
     public function testReplyLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
         $this->assertContains($post->Thread()->URLSegment .'/reply/'.$post->ThreadID, $post->ReplyLink());
     }
 
     public function testShowLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
-        Forum::$posts_per_page = 8;
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
+        ForumPage::$postsPerPage = 8;
 
         // test for show link on first page
         $this->assertContains($post->Thread()->URLSegment .'/show/'.$post->ThreadID, $post->ShowLink());
 
         // test for link that should be last post on the first page
-        $eighthPost = $this->objFromFixture('Post', 'Post9');
+        /** @var Post $eighthPost */
+        $eighthPost = $this->objFromFixture(Post::class, 'Post9');
         $this->assertContains($eighthPost->Thread()->URLSegment .'/show/'.$eighthPost->ThreadID.'#post'.$eighthPost->ID, $eighthPost->ShowLink());
 
         // test for a show link on a subpage
-        $lastPost = $this->objFromFixture('Post', 'Post10');
+        /** @var Post $lastPost */
+        $lastPost = $this->objFromFixture(Post::class, 'Post10');
         $this->assertContains($lastPost->Thread()->URLSegment .'/show/'. $lastPost->ThreadID . '?start=8#post'.$lastPost->ID, $lastPost->ShowLink());
 
         // this is the last post on page 2
-        $lastPost = $this->objFromFixture('Post', 'Post17');
+        $lastPost = $this->objFromFixture(Post::class, 'Post17');
         $this->assertContains($lastPost->Thread()->URLSegment .'/show/'. $lastPost->ThreadID . '?start=8#post'.$lastPost->ID, $lastPost->ShowLink());
 
         // test for a show link on the last subpage
-        $lastPost = $this->objFromFixture('Post', 'Post18');
+        $lastPost = $this->objFromFixture(Post::class, 'Post18');
         $this->assertContains($lastPost->Thread()->URLSegment .'/show/'. $lastPost->ThreadID . '?start=16#post'.$lastPost->ID, $lastPost->ShowLink());
     }
 
     public function testEditLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
 
         // should be false since we're not logged in.
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
@@ -139,7 +181,7 @@ class PostTest extends FunctionalTest
         $this->assertFalse($post->EditLink());
 
         // logged in as the member. Should be able to edit it
-        $member = $this->objFromFixture('Member', 'test1');
+        $member = $this->objFromFixture(Member::class, 'test1');
         $member->logIn();
 
         $this->assertContains($post->Thread()->URLSegment .'/editpost/'. $post->ID, $post->EditLink());
@@ -147,7 +189,8 @@ class PostTest extends FunctionalTest
         // log in as another member who is not
         $member->logOut();
 
-        $memberOther = $this->objFromFixture('Member', 'test2');
+        /** @var Member $memberOther */
+        $memberOther = $this->objFromFixture(Member::class, 'test2');
         $memberOther->logIn();
 
         $this->assertFalse($post->EditLink());
@@ -155,12 +198,14 @@ class PostTest extends FunctionalTest
 
     public function testDeleteLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
 
         //enable token
         SecurityToken::enable();
 
         // should be false since we're not logged in.
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
@@ -169,7 +214,7 @@ class PostTest extends FunctionalTest
         $this->assertFalse($post->DeleteLink());
 
         // logged in as the moderator. Should be able to delete the post.
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertContains($post->Thread()->URLSegment .'/deletepost/'. $post->ID, $post->DeleteLink());
@@ -180,13 +225,13 @@ class PostTest extends FunctionalTest
         $member->logOut();
 
         // log in as another member who is not in a position to delete this post
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertFalse($post->DeleteLink());
 
         // log in as someone who can moderate this post (and therefore delete it)
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
 
@@ -197,19 +242,22 @@ class PostTest extends FunctionalTest
         $this->assertContains($post->Thread()->URLSegment .'/deletepost/'. $post->ID, $post->DeleteLink());
 
         // test that a 2nd post doesn't have the first post ID hook
-        $memberOthersPost = $this->objFromFixture('Post', 'Post2');
+        /** @var Post $memberOthersPost */
+        $memberOthersPost = $this->objFromFixture(Post::class, 'Post2');
 
         $this->assertFalse(strstr($memberOthersPost->DeleteLink(), "firstPost"));
     }
 
     public function testMarkAsSpamLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
 
         //enable token
         SecurityToken::enable();
 
         // should be false since we're not logged in.
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
@@ -218,7 +266,7 @@ class PostTest extends FunctionalTest
         $this->assertFalse($post->MarkAsSpamLink());
 
         // logged in as the moderator. Should be able to mark the post as spam.
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertContains($post->Thread()->URLSegment .'/markasspam/'. $post->ID, $post->MarkAsSpamLink());
@@ -229,13 +277,13 @@ class PostTest extends FunctionalTest
         $member->logOut();
 
         // log in as another member who is not in a position to mark post as spam this post
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertFalse($post->MarkAsSpamLink());
 
         // log in as someone who can moderate this post (and therefore mark as spam)
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
 
@@ -246,16 +294,19 @@ class PostTest extends FunctionalTest
         $this->assertContains($post->Thread()->URLSegment .'/markasspam/'. $post->ID, $post->MarkAsSpamLink());
 
         // test that a 2nd post doesn't have the first post ID hook
-        $memberOthersPost = $this->objFromFixture('Post', 'Post2');
+        /** @var Post $memberOthersPost */
+        $memberOthersPost = $this->objFromFixture(Post::class, 'Post2');
 
         $this->assertFalse(strstr($memberOthersPost->MarkAsSpamLink(), "firstPost"));
     }
 
     public function testBanAndGhostLink()
     {
-        $post = $this->objFromFixture('Post', 'Post1');
+        /** @var Post $post */
+        $post = $this->objFromFixture(Post::class, 'Post1');
 
         // should be false since we're not logged in.
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
@@ -265,9 +316,10 @@ class PostTest extends FunctionalTest
         $this->assertFalse($post->GhostLink());
 
         // logged in as the moderator. Should be able to mark the post as spam.
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
+        /** @var  $forum */
         $forum = $post->Thread()->Forum();
         $this->assertContains($forum->URLSegment . '/ban/' . $post->AuthorID, $post->BanLink());
         $this->assertContains($forum->URLSegment . '/ghost/' . $post->AuthorID, $post->GhostLink());
@@ -275,7 +327,7 @@ class PostTest extends FunctionalTest
         $member->logOut();
 
         // log in as another member who is not in a position to mark post as spam this post
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertFalse($post->BanLink());
@@ -284,7 +336,8 @@ class PostTest extends FunctionalTest
 
     public function testGetUpdated()
     {
-        $post = new Post();
+        /** @var Post $post */
+        $post = Post::create();
         $post->Content = "Original Content";
         $post->write();
 

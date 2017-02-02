@@ -1,13 +1,30 @@
 <?php
 
+namespace SilverStripe\Forum\Tests;
+
+use SilverStripe\Control\Email\Email;
+use SilverStripe\ORM\ValidationException;
+use SilverStripe\Security\Member;
+use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\Forum\Controller\ForumPageController;
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\ORM\DataModel;
+use SilverStripe\Forum\Model\Post;
+use SilverStripe\Forum\Model\ForumThread;
+use SilverStripe\Security\SecurityToken;
+use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Dev\FunctionalTest;
+
 /**
  * @todo Write Tests for doPostMessageForm()
  */
-class ForumTest extends FunctionalTest
+class ForumPageTest extends FunctionalTest
 {
 
-    static $fixture_file = "forum/tests/ForumTest.yml";
-    static $use_draft_site = true;
+    public static $fixtureFile = "forum/tests/ForumTest.yml";
+    public static $useDraftSite = true;
 
     public function testCanView()
     {
@@ -16,11 +33,11 @@ class ForumTest extends FunctionalTest
             $member->logOut();
         }
 
-        $public = $this->objFromFixture('Forum', 'general');
-        $private = $this->objFromFixture('Forum', 'loggedInOnly');
-        $limited = $this->objFromFixture('Forum', 'limitedToGroup');
-        $noposting = $this->objFromFixture('Forum', 'noPostingForum');
-        $inherited = $this->objFromFixture('Forum', 'inheritedForum');
+        $public = $this->objFromFixture(ForumPage::class, 'general');
+        $private = $this->objFromFixture(ForumPage::class, 'loggedInOnly');
+        $limited = $this->objFromFixture(ForumPage::class, 'limitedToGroup');
+        $noposting = $this->objFromFixture(ForumPage::class, 'noPostingForum');
+        $inherited = $this->objFromFixture(ForumPage::class, 'inheritedForum');
 
         $this->assertTrue($public->canView());
         $this->assertFalse($private->canView());
@@ -29,7 +46,8 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canView());
 
         // try logging in a member
-        $member = $this->objFromFixture('Member', 'test1');
+        /** @var Member $member */
+        $member = $this->objFromFixture(Member::class, 'test1');
         $member->logIn();
 
         $this->assertTrue($public->canView());
@@ -39,7 +57,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canView());
 
         // login as a person with access to restricted forum
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertTrue($public->canView());
@@ -49,7 +67,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canView());
 
         // Moderator should be able to view his own forums
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertTrue($public->canView());
@@ -62,15 +80,25 @@ class ForumTest extends FunctionalTest
     public function testCanPost()
     {
         // test viewing not logged in
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
 
-        $public = $this->objFromFixture('Forum', 'general');
-        $private = $this->objFromFixture('Forum', 'loggedInOnly');
-        $limited = $this->objFromFixture('Forum', 'limitedToGroup');
-        $noposting = $this->objFromFixture('Forum', 'noPostingForum');
-        $inherited = $this->objFromFixture('Forum', 'inheritedForum');
+        /** @var ForumPage $public */
+        $public = $this->objFromFixture(ForumPage::class, 'general');
+
+        /** @var ForumPage $private */
+        $private = $this->objFromFixture(ForumPage::class, 'loggedInOnly');
+
+        /** @var ForumPage $limited */
+        $limited = $this->objFromFixture(ForumPage::class, 'limitedToGroup');
+
+        /** @var ForumPage $noposting */
+        $noposting = $this->objFromFixture(ForumPage::class, 'noPostingForum');
+
+        /** @var ForumPage $inherited */
+        $inherited = $this->objFromFixture(ForumPage::class, 'inheritedForum');
 
         $this->assertTrue($public->canPost());
         $this->assertFalse($private->canPost());
@@ -79,7 +107,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canPost());
 
         // try logging in a member
-        $member = $this->objFromFixture('Member', 'test1');
+        $member = $this->objFromFixture(Member::class, 'test1');
         $member->logIn();
 
         $this->assertTrue($public->canPost());
@@ -89,7 +117,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canPost());
 
         // login as a person with access to restricted forum
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertTrue($public->canPost());
@@ -99,7 +127,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canPost());
 
         // Moderator should be able to view his own forums
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertTrue($public->canPost());
@@ -111,13 +139,19 @@ class ForumTest extends FunctionalTest
 
     public function testSuspended()
     {
-        $private = $this->objFromFixture('Forum', 'loggedInOnly');
-        $limited = $this->objFromFixture('Forum', 'limitedToGroup');
-        $inheritedForum_loggedInOnly = $this->objFromFixture('Forum', 'inheritedForum_loggedInOnly');
-        SS_Datetime::set_mock_now('2011-10-10 12:00:00');
+        /** @var ForumPage $private */
+        $private = $this->objFromFixture(ForumPage::class, 'loggedInOnly');
+
+        /** @var ForumPage $limited */
+        $limited = $this->objFromFixture(ForumPage::class, 'limitedToGroup');
+
+        /** @var ForumPage $inheritedForum_loggedInOnly */
+        $inheritedForum_loggedInOnly = $this->objFromFixture(ForumPage::class, 'inheritedForum_loggedInOnly');
+        DBDatetime::set_mock_now('2011-10-10 12:00:00');
 
         // try logging in a member suspendedexpired
-        $suspendedexpired = $this->objFromFixture('Member', 'suspendedexpired');
+        /** @var Member $suspendedexpired */
+        $suspendedexpired = $this->objFromFixture(Member::class, 'suspendedexpired');
         $this->assertFalse($suspendedexpired->IsSuspended());
         $suspendedexpired->logIn();
         $this->assertTrue($private->canPost());
@@ -125,7 +159,7 @@ class ForumTest extends FunctionalTest
         $this->assertTrue($inheritedForum_loggedInOnly->canPost());
 
         // try logging in a member suspended
-        $suspended = $this->objFromFixture('Member', 'suspended');
+        $suspended = $this->objFromFixture(Member::class, 'suspended');
         $this->assertTrue($suspended->IsSuspended());
         $suspended->logIn();
         $this->assertFalse($private->canPost());
@@ -136,15 +170,25 @@ class ForumTest extends FunctionalTest
     public function testCanModerate()
     {
         // test viewing not logged in
+        /** @var Member $member */
         if ($member = Member::currentUser()) {
             $member->logOut();
         }
 
-        $public = $this->objFromFixture('Forum', 'general');
-        $private = $this->objFromFixture('Forum', 'loggedInOnly');
-        $limited = $this->objFromFixture('Forum', 'limitedToGroup');
-        $noposting = $this->objFromFixture('Forum', 'noPostingForum');
-        $inherited = $this->objFromFixture('Forum', 'inheritedForum');
+        /** @var ForumPage $public */
+        $public = $this->objFromFixture(ForumPage::class, 'general');
+
+        /** @var ForumPage $private */
+        $private = $this->objFromFixture(ForumPage::class, 'loggedInOnly');
+        
+        /** @var ForumPage $limited */
+        $limited = $this->objFromFixture(ForumPage::class, 'limitedToGroup');
+        
+        /** @var ForumPage $noposting */
+        $noposting = $this->objFromFixture(ForumPage::class, 'noPostingForum');
+        
+        /** @var ForumPage $inherited */
+        $inherited = $this->objFromFixture(ForumPage::class, 'inheritedForum');
 
         $this->assertFalse($public->canModerate());
         $this->assertFalse($private->canModerate());
@@ -153,7 +197,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canModerate());
 
         // try logging in a member
-        $member = $this->objFromFixture('Member', 'test1');
+        $member = $this->objFromFixture(Member::class, 'test1');
         $member->logIn();
 
         $this->assertFalse($public->canModerate());
@@ -163,7 +207,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canModerate());
 
         // login as a person with access to restricted forum
-        $member = $this->objFromFixture('Member', 'test2');
+        $member = $this->objFromFixture(Member::class, 'test2');
         $member->logIn();
 
         $this->assertFalse($public->canModerate());
@@ -173,7 +217,7 @@ class ForumTest extends FunctionalTest
         $this->assertFalse($inherited->canModerate());
 
         // Moderator should be able to view his own forums
-        $member = $this->objFromFixture('Member', 'moderator');
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertTrue($public->canModerate());
@@ -185,24 +229,26 @@ class ForumTest extends FunctionalTest
 
     public function testCanAttach()
     {
-        $canAttach = $this->objFromFixture('Forum', 'general');
+        /** @var ForumPage $canAttach */
+        $canAttach = $this->objFromFixture(ForumPage::class, 'general');
         $this->assertTrue($canAttach->canAttach());
 
-        $noAttach = $this->objFromFixture('Forum', 'forum1cat2');
+        /** @var ForumPage $noAttach */
+        $noAttach = $this->objFromFixture(ForumPage::class, 'forum1cat2');
         $this->assertFalse($noAttach->canAttach());
     }
 
     public function testgetForbiddenWords()
     {
-        $forum = $this->objFromFixture("Forum", "general");
-        $f_controller = new Forum_Controller($forum);
+        $forum = $this->objFromFixture(ForumPage::class, "general");
+        $f_controller = new ForumPageController($forum);
         $this->assertEquals($f_controller->getForbiddenWords(), "shit,fuck");
     }
 
     public function testfilterLanguage()
     {
-        $forum =  $this->objFromFixture("Forum", "general");
-        $f_controller = new Forum_Controller($forum);
+        $forum =  $this->objFromFixture(ForumPage::class, "general");
+        $f_controller = new ForumPageController($forum);
         $this->assertEquals($f_controller->filterLanguage('shit'), "*");
 
         $this->assertEquals($f_controller->filterLanguage('shit and fuck'), "* and *");
@@ -212,7 +258,8 @@ class ForumTest extends FunctionalTest
 
     public function testGetStickyTopics()
     {
-        $forumWithSticky = $this->objFromFixture("Forum", "general");
+        /** @var ForumPage $forumWithSticky */
+        $forumWithSticky = $this->objFromFixture(ForumPage::class, "general");
         $stickies = $forumWithSticky->getStickyTopics();
         $this->assertEquals($stickies->Count(), '2');
 
@@ -223,7 +270,8 @@ class ForumTest extends FunctionalTest
         $this->assertEquals($stickies->Count(), '1');
         $this->assertEquals($stickies->First()->Title, 'Sticky Thread');
 
-        $forumWithGlobalOnly = $this->objFromFixture("Forum", "forum1cat2");
+        /** @var ForumPage $forumWithGlobalOnly */
+        $forumWithGlobalOnly = $this->objFromFixture(ForumPage::class, "forum1cat2");
         $stickies = $forumWithGlobalOnly->getStickyTopics();
         $this->assertEquals($stickies->Count(), '1');
         $this->assertEquals($stickies->First()->Title, 'Global Sticky Thread');
@@ -233,30 +281,30 @@ class ForumTest extends FunctionalTest
 
     public function testTopics()
     {
-        $forumWithPosts = $this->objFromFixture("Forum", "general");
-
+        /** @var ForumPage $forumWithPosts */
+        $forumWithPosts = $this->objFromFixture(ForumPage::class, "general");
         $this->assertEquals($forumWithPosts->getTopics()->Count(), '4');
 
-        $forumWithoutPosts = $this->objFromFixture("Forum", "forum1cat2");
-
+        /** @var ForumPage $forumWithoutPosts */
+        $forumWithoutPosts = $this->objFromFixture(ForumPage::class, "forum1cat2");
         $this->assertNull($forumWithoutPosts->getTopics());
     }
 
     public function testGetLatestPost()
     {
-        $forumWithPosts = $this->objFromFixture("Forum", "general");
-
+        /** @var ForumPage $forumWithPosts */
+        $forumWithPosts = $this->objFromFixture(ForumPage::class, "general");
         $this->assertEquals($forumWithPosts->getLatestPost()->Content, 'This is the last post to a long thread');
 
-        $forumWithoutPosts = $this->objFromFixture("Forum", "forum1cat2");
-
+        /** @var ForumPage $forumWithoutPosts */
+        $forumWithoutPosts = $this->objFromFixture(ForumPage::class, "forum1cat2");
         $this->assertNull($forumWithoutPosts->getLatestPost());
     }
 
     public function testGetNumPosts()
     {
-        $forumWithPosts = $this->objFromFixture("Forum", "general");
-
+        /** @var ForumPage $forumWithPosts */
+        $forumWithPosts = $this->objFromFixture(ForumPage::class, "general");
         $this->assertEquals(24, $forumWithPosts->getNumPosts());
 
         //Mark spammer accounts and retest the posts count
@@ -266,12 +314,12 @@ class ForumTest extends FunctionalTest
 
     public function testGetNumTopics()
     {
-        $forumWithPosts = $this->objFromFixture("Forum", "general");
-
+        /** @var ForumPage $forumWithPosts */
+        $forumWithPosts = $this->objFromFixture(ForumPage::class, "general");
         $this->assertEquals(6, $forumWithPosts->getNumTopics());
 
-        $forumWithoutPosts = $this->objFromFixture("Forum", "forum1cat2");
-
+        /** @var ForumPage $forumWithoutPosts */
+        $forumWithoutPosts = $this->objFromFixture(ForumPage::class, "forum1cat2");
         $this->assertEquals(0, $forumWithoutPosts->getNumTopics());
 
         //Mark spammer accounts and retest the threads count
@@ -281,12 +329,12 @@ class ForumTest extends FunctionalTest
 
     public function testGetTotalAuthors()
     {
-        $forumWithPosts = $this->objFromFixture("Forum", "general");
-
+        /** @var ForumPage $forumWithPosts */
+        $forumWithPosts = $this->objFromFixture(ForumPage::class, "general");
         $this->assertEquals(4, $forumWithPosts->getNumAuthors());
 
-        $forumWithoutPosts = $this->objFromFixture("Forum", "forum1cat2");
-
+        /** @var ForumPage $forumWithoutPosts */
+        $forumWithoutPosts = $this->objFromFixture(ForumPage::class, "forum1cat2");
         $this->assertEquals(0, $forumWithoutPosts->getNumAuthors());
 
         //Mark spammer accounts and retest the authors count
@@ -297,11 +345,11 @@ class ForumTest extends FunctionalTest
     protected function markGhosts()
     {
         //Mark a members as a spammers
-        $spammer = $this->objFromFixture("Member", "spammer");
+        $spammer = $this->objFromFixture(Member::class, "spammer");
         $spammer->ForumStatus = 'Ghost';
         $spammer->write();
 
-        $spammer2 = $this->objFromFixture("Member", "spammer2");
+        $spammer2 = $this->objFromFixture(Member::class, "spammer2");
         $spammer2->ForumStatus = 'Ghost';
         $spammer2->write();
     }
@@ -311,16 +359,19 @@ class ForumTest extends FunctionalTest
      */
     public function testMarkAsSpamLink()
     {
-        $spampost = $this->objFromFixture('Post', 'SpamSecondPost');
+        /** @var Post $spampost */
+        $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        $moderator = $this->objFromFixture('Member', 'moderator'); // moderator for "general" forum
+        
+        /** @var Member $moderator */
+        $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 
         // without a logged-in moderator
         $this->assertFalse($spampost->MarkAsSpamLink(), 'Link not present by default');
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'markasspam/'. $spampost->ID), DataModel::inst());
+        $c = new ForumPageController($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'markasspam/'. $spampost->ID), DataModel::inst());
         $this->assertEquals(403, $response->getStatusCode());
 
         // with logged-in moderator
@@ -329,8 +380,8 @@ class ForumTest extends FunctionalTest
 
         $this->assertNull($author->SuspendedUntil);
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'markasspam/'. $spampost->ID), DataModel::inst());
+        $c = new ForumPageController($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'markasspam/'. $spampost->ID), DataModel::inst());
         $this->assertFalse($response->isError());
 
         // removes the post
@@ -341,13 +392,14 @@ class ForumTest extends FunctionalTest
         $this->assertNotNull($author->SuspendedUntil);
 
         // does not effect the thread
+        /** @var ForumThread $thread */
         $thread = ForumThread::get()->byID($spampost->Thread()->ID);
         $this->assertEquals('1', $thread->getNumPosts());
 
         // mark the first post in that now as spam
-        $spamfirst = $this->objFromFixture('Post', 'SpamFirstPost');
+        $spamfirst = $this->objFromFixture(Post::class, 'SpamFirstPost');
 
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'markasspam/'. $spamfirst->ID), DataModel::inst());
+        $response = $c->handleRequest(new HTTPRequest('GET', 'markasspam/'. $spamfirst->ID), DataModel::inst());
 
         // removes the thread
         $this->assertNull(ForumThread::get()->byID($spamfirst->Thread()->ID));
@@ -355,51 +407,58 @@ class ForumTest extends FunctionalTest
 
     public function testBanLink()
     {
-        $spampost = $this->objFromFixture('Post', 'SpamSecondPost');
+        /** @var Post $spampost */
+        $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        $moderator = $this->objFromFixture('Member', 'moderator'); // moderator for "general" forum
+        
+        /** @var Member $moderator */
+        $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 
         // without a logged-in moderator
         $this->assertFalse($spampost->BanLink(), 'Link not present by default');
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'ban/'. $spampost->AuthorID), DataModel::inst());
+        $c = ForumPageController::create($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'ban/'. $spampost->AuthorID), DataModel::inst());
         $this->assertEquals(403, $response->getStatusCode());
 
         // with logged-in moderator
         $moderator->logIn();
         $this->assertNotEquals(false, $spampost->BanLink(), 'Link present for moderators on this forum');
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'ban/'. $spampost->AuthorID), DataModel::inst());
+        $c = new ForumPageController($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'ban/'. $spampost->AuthorID), DataModel::inst());
         $this->assertFalse($response->isError());
 
         // user is banned
+        /** @var Member $author */
         $author = Member::get()->byId($author->ID);
         $this->assertTrue($author->IsBanned());
     }
 
     public function testGhostLink()
     {
-        $spampost = $this->objFromFixture('Post', 'SpamSecondPost');
+        /** @var Post $spampost */
+        $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        $moderator = $this->objFromFixture('Member', 'moderator'); // moderator for "general" forum
+        
+        /** @var Member $moderator */
+        $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 
         // without a logged-in moderator
         $this->assertFalse($spampost->GhostLink(), 'Link not present by default');
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'ghost/'. $spampost->AuthorID), DataModel::inst());
+        $c = ForumPageController::create($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'ghost/'. $spampost->AuthorID), DataModel::inst());
         $this->assertEquals(403, $response->getStatusCode());
 
         // with logged-in moderator
         $moderator->logIn();
         $this->assertNotEquals(false, $spampost->GhostLink(), 'Link present for moderators on this forum');
 
-        $c = new Forum_Controller($forum);
-        $response = $c->handleRequest(new SS_HTTPRequest('GET', 'ghost/'. $spampost->AuthorID), DataModel::inst());
+        $c = ForumPageController::create($forum);
+        $response = $c->handleRequest(new HTTPRequest('GET', 'ghost/'. $spampost->AuthorID), DataModel::inst());
         $this->assertFalse($response->isError());
 
         // post isn't available anymore in normal queries. {@link ForumSpamPostExtension}
@@ -407,6 +466,7 @@ class ForumTest extends FunctionalTest
         $this->assertNull($post);
 
         // user is banned
+        /** @var Member $author */
         $author = Member::get()->byId($author->ID);
         $this->assertTrue($author->IsGhost());
     }
@@ -414,12 +474,15 @@ class ForumTest extends FunctionalTest
     public function testNotifyModerators()
     {
         SecurityToken::disable();
-        $notifyModerators = Forum::$notify_moderators;
-        Forum::$notify_moderators = true;
+        $notifyModerators = ForumPage::$notifyModerators;
+        ForumPage::$notifyModerators = true;
 
-        $forum = $this->objFromFixture('Forum', 'general');
-        $controller = new Forum_Controller($forum);
-        $user = $this->objFromFixture('Member', 'test1');
+        /** @var ForumPage $forum */
+        $forum = $this->objFromFixture(ForumPage::class, 'general');
+        $controller = ForumPageController::create($forum);
+
+        /** @var Member $user */
+        $user = $this->objFromFixture(Member::class, 'test1');
         $this->session()->inst_set('loggedInAs', $user->ID);
 
         // New thread
@@ -432,13 +495,13 @@ class ForumTest extends FunctionalTest
             )
         );
 
-        $adminEmail = Config::inst()->get('Email', 'admin_email');
+        $adminEmail = Config::inst()->get(Email::class, 'admin_email');
 
-        $this->assertEmailSent('test3@example.com', $adminEmail, "New thread \"New thread\" in forum [General Discussion]");
+        $this->assertEmailSent('test3@example.com', $adminEmail, 'New thread "New thread" in forum [General Discussion]');
         $this->clearEmails();
 
         // New response
-        $thread = DataObject::get_one('ForumThread', "\"ForumThread\".\"Title\"='New thread'");
+        $thread = DataObject::get_one(ForumThread::class, "\"ForumThread\".\"Title\"='New thread'");
         $this->post(
             $forum->RelativeLink('PostMessageForm'),
             array(
@@ -448,7 +511,7 @@ class ForumTest extends FunctionalTest
                 'action_doPostMessageForm' => 1
             )
         );
-        $this->assertEmailSent('test3@example.com', $adminEmail, "New post \"Re: New thread\" in forum [General Discussion]");
+        $this->assertEmailSent('test3@example.com', $adminEmail, 'New post "Re: New thread" in forum [General Discussion]');
         $this->clearEmails();
 
         // Edit
@@ -466,7 +529,7 @@ class ForumTest extends FunctionalTest
         $this->assertEmailSent('test3@example.com', $adminEmail, "New post \"Re: New thread\" in forum [General Discussion]");
         $this->clearEmails();
 
-        Forum::$notify_moderators = $notifyModerators;
+        ForumPage::$notifyModerators = $notifyModerators;
     }
 
     /**
@@ -490,7 +553,7 @@ class ForumTest extends FunctionalTest
 
         $post->delete();
 
-        $member = DataObject::get_by_id('Member', $checkID);
+        $member = DataObject::get_by_id(Member::class, $checkID);
         $this->assertTrue($member->ID == $checkID);
     }
 }

@@ -1,16 +1,30 @@
 <?php
 
+namespace SilverStripe\Forum\Tests;
+
+use SilverStripe\Forum\Model\ForumThread;
+use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Security\Member;
+use SilverStripe\Forum\Report\ForumMemberSignupsReport;
+use SilverStripe\Forum\Report\ForumMonthlyPostsReport;
+use SilverStripe\Forum\Model\Post;
+use SilverStripe\Dev\FunctionalTest;
+
+/**
+ * Class ForumReportTest
+ * @package SilverStripe\Forum\Tests
+ */
 class ForumReportTest extends FunctionalTest
 {
 
-    protected static $fixture_file = 'forum/tests/ForumTest.yml';
-    protected static $use_draft_site = true;
+    protected static $fixtureFile = 'forum/tests/ForumTest.yml';
+    protected static $useDraftSite = true;
 
     public function setUp()
     {
         parent::setUp();
 
-        $member = $this->objFromFixture('Member', 'admin');
+        $member = $this->objFromFixture(Member::class, 'admin');
         $member->logIn();
     }
 
@@ -25,7 +39,7 @@ class ForumReportTest extends FunctionalTest
 
     public function testMemberSignupsReport()
     {
-        $r = new ForumReport_MemberSignups();
+        $r = new ForumMemberSignupsReport();
         $before = $r->records(array());
 
         // Create a new Member in current month
@@ -47,14 +61,14 @@ class ForumReportTest extends FunctionalTest
 
     public function testMonthlyPostsReport()
     {
-        $r = new ForumReport_MonthlyPosts();
+        $r = new ForumMonthlyPostsReport();
         $before = $r->records(array());
 
         // Create a new post in current month
         $post = new Post();
-        $post->AuthorID = $this->objFromFixture('Member', 'test2')->ID;
-        $post->ThreadID = $this->objFromFixture('ForumThread', 'Thread2')->ID;
-        $post->ForumID = $this->objFromFixture('Forum', 'forum5')->ID;
+        $post->AuthorID = $this->objFromFixture(Member::class, 'test2')->ID;
+        $post->ThreadID = $this->objFromFixture(ForumThread::class, 'Thread2')->ID;
+        $post->ForumID = $this->objFromFixture(ForumPage::class, 'forum5')->ID;
         $post->write();
 
         // Ensure the post count for current month has increased by one

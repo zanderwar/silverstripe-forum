@@ -1,27 +1,38 @@
 <?php
 
+namespace SilverStripe\Forum\Tests;
+
+use SilverStripe\Control\Session;
+use SilverStripe\Forum\Model\ForumThreadSubscription;
+use SilverStripe\Forum\Model\ForumThread;
+use SilverStripe\Forum\Model\Post;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Security\Member;
+
 /**
  * @todo Write some more complex tests for testing the can*() functionality
  */
 class ForumThreadTest extends FunctionalTest
 {
 
-    static $fixture_file = "forum/tests/ForumTest.yml";
+    public static $fixtureFile = "forum/tests/ForumTest.yml";
 
     // fixes permission issues with these tests, we don't need to test versioning anyway.
     // without this, SiteTree::canView() would always return false even though CanViewType == Anyone.
-    static $use_draft_site = true;
+    public static $useDraftSite = true;
 
     public function testGetNumPosts()
     {
-        $thread = $this->objFromFixture("ForumThread", "Thread1");
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, "Thread1");
 
         $this->assertEquals(17, $thread->getNumPosts());
     }
 
     public function testIncViews()
     {
-        $thread = $this->objFromFixture("ForumThread", "Thread1");
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, "Thread1");
 
         // clear session
         Session::clear('ForumViewed-'.$thread->ID);
@@ -35,31 +46,39 @@ class ForumThreadTest extends FunctionalTest
 
     public function testGetLatestPost()
     {
-        $thread = $this->objFromFixture("ForumThread", "Thread1");
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, "Thread1");
 
         $this->assertEquals($thread->getLatestPost()->Content, "This is the last post to a long thread");
     }
 
     public function testGetFirstPost()
     {
-        $thread = $this->objFromFixture("ForumThread", "Thread1");
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, "Thread1");
 
         $this->assertEquals($thread->getFirstPost()->Content, "This is my first post");
     }
 
     public function testSubscription()
     {
-        $thread = $this->objFromFixture("ForumThread", "Thread1");
-        $thread2 = $this->objFromFixture("ForumThread", "Thread2");
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, "Thread1");
 
-        $member = $this->objFromFixture("Member", "test1");
-        $member2 = $this->objFromFixture("Member", "test2");
+        /** @var ForumThread $thread2 */
+        $thread2 = $this->objFromFixture(ForumThread::class, "Thread2");
 
-        $this->assertTrue(ForumThread_Subscription::already_subscribed($thread->ID, $member->ID));
-        $this->assertTrue(ForumThread_Subscription::already_subscribed($thread->ID, $member2->ID));
+        /** @var Member $member */
+        $member = $this->objFromFixture(Member::class, "test1");
 
-        $this->assertFalse(ForumThread_Subscription::already_subscribed($thread2->ID, $member->ID));
-        $this->assertFalse(ForumThread_Subscription::already_subscribed($thread2->ID, $member2->ID));
+        /** @var Member $member2 */
+        $member2 = $this->objFromFixture(Member::class, "test2");
+
+        $this->assertTrue(ForumThreadSubscription::alreadySubscribed($thread->ID, $member->ID));
+        $this->assertTrue(ForumThreadSubscription::alreadySubscribed($thread->ID, $member2->ID));
+
+        $this->assertFalse(ForumThreadSubscription::alreadySubscribed($thread2->ID, $member->ID));
+        $this->assertFalse(ForumThreadSubscription::alreadySubscribed($thread2->ID, $member2->ID));
     }
 
     public function testOnBeforeDelete()
@@ -75,35 +94,40 @@ class ForumThreadTest extends FunctionalTest
 
         $thread->delete();
 
-        $this->assertFalse(DataObject::get_by_id('Post', $postID));
-        $this->assertFalse(DataObject::get_by_id('ForumThread', $thread->ID));
+        $this->assertFalse(Post::get()->byID($postID) instanceof Post);
+        $this->assertFalse(Post::get()->byID($thread->ID) instanceof Post);
     }
 
     public function testPermissions()
     {
-        $member = $this->objFromFixture('Member', 'test1');
+        /** @var Member $member */
+        $member = $this->objFromFixture(Member::class, 'test1');
         $this->session()->inst_set('loggedInAs', $member->ID);
 
         // read only thread. No one should be able to post to this (apart from the )
-        $readonly = $this->objFromFixture('ForumThread', 'ReadonlyThread');
+        /** @var ForumThread $readonly */
+        $readonly = $this->objFromFixture(ForumThread::class, 'ReadonlyThread');
         $this->assertFalse($readonly->canPost());
         $this->assertTrue($readonly->canView());
         $this->assertFalse($readonly->canModerate());
 
         // normal thread. They can post to these
-        $thread = $this->objFromFixture('ForumThread', 'Thread1');
+        /** @var ForumThread $thread */
+        $thread = $this->objFromFixture(ForumThread::class, 'Thread1');
         $this->assertTrue($thread->canPost());
         $this->assertTrue($thread->canView());
         $this->assertFalse($thread->canModerate());
 
         // normal thread in a read only
-        $disabledforum = $this->objFromFixture('ForumThread', 'ThreadWhichIsInInheritedForum');
+        /** @var ForumThread $disabledforum */
+        $disabledforum = $this->objFromFixture(ForumThread::class, 'ThreadWhichIsInInheritedForum');
         $this->assertFalse($disabledforum->canPost());
         $this->assertFalse($disabledforum->canView());
         $this->assertFalse($disabledforum->canModerate());
 
         // Moderator can access threads nevertheless
-        $member = $this->objFromFixture('Member', 'moderator');
+        /** @var Member $member */
+        $member = $this->objFromFixture(Member::class, 'moderator');
         $member->logIn();
 
         $this->assertFalse($disabledforum->canPost());

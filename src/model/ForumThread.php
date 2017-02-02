@@ -4,6 +4,7 @@ namespace SilverStripe\Forum\Model;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Forum\Model\Post;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBInt;
 use SilverStripe\ORM\FieldType\DBText;
@@ -48,12 +49,12 @@ class ForumThread extends DataObject
 
     /** @var array */
     private static $has_one = array(
-        'Forum' => 'Forum'
+        'Forum' => ForumPage::class
     );
 
     /** @var array */
     private static $has_many = array(
-        'Posts' => 'Post'
+        'Posts' => Post::class
     );
 
     /** @var array */
@@ -228,7 +229,7 @@ class ForumThread extends DataObject
         $sqlQuery = new SQLQuery();
         $sqlQuery->setFrom('"Post"');
         $sqlQuery->setSelect('COUNT("Post"."ID")');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
         $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"ThreadID" = ' . $this->ID);
 
@@ -305,7 +306,7 @@ class ForumThread extends DataObject
 
     /**
      * Ensure the correct ForumID is applied to the record
-     * 
+     *
      * @return void
      */
     public function onAfterWrite()

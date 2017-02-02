@@ -12,17 +12,16 @@ use SilverStripe\Dev\FunctionalTest;
 
 /**
  * Class PostTest
- * 
+ *
  * @package SilverStripe\Forum\Tests
  */
 class PostTest extends FunctionalTest
 {
-
-    public static $fixtureFile = "forum/tests/ForumTest.yml";
+    protected static $fixture_file = "ForumTest.yml";
 
     // fixes permission issues with these tests, we don't need to test versioning anyway.
     // without this, SiteTree::canView() would always return false even though CanViewType == Anyone.
-    public static $useDraftSite = true;
+    protected static $use_draft_site = true;
 
     /** @var bool */
     public $useToken;
@@ -39,7 +38,7 @@ class PostTest extends FunctionalTest
     }
 
     /**
-     * Tear Down 
+     * Tear Down
      */
     public function tearDown()
     {

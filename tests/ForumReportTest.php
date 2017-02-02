@@ -16,9 +16,8 @@ use SilverStripe\Dev\FunctionalTest;
  */
 class ForumReportTest extends FunctionalTest
 {
-
-    protected static $fixtureFile = 'forum/tests/ForumTest.yml';
-    protected static $useDraftSite = true;
+    protected static $fixture_file = 'ForumTest.yml';
+    protected static $use_draft_site = true;
 
     public function setUp()
     {

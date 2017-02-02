@@ -84,7 +84,7 @@ class ForumHolderPage extends \Page
     );
 
     private static $has_many = array(
-        "Categories" => "ForumCategory"
+        "Categories" => ForumCategory::class
     );
 
     /** @var string */
@@ -362,8 +362,9 @@ class ForumHolderPage extends \Page
         $sqlQuery = new SQLQuery();
         $sqlQuery->setFrom('"Post"');
         $sqlQuery->setSelect('COUNT(DISTINCT("AuthorID"))');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addInnerJoin('SilverStripe\\CMS\\Model\\SiteTree', '"Post"."ForumID" = "SiteTree"."ID"');
+        // @todo get these tables names from the DataObjectSchema
+        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addInnerJoin('SiteTree', '"Post"."ForumID" = "SiteTree"."ID"');
         $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"SiteTree"."ParentID" = ' . $this->ID);
 

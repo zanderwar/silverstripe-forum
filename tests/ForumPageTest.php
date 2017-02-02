@@ -22,9 +22,8 @@ use SilverStripe\Dev\FunctionalTest;
  */
 class ForumPageTest extends FunctionalTest
 {
-
-    public static $fixtureFile = "forum/tests/ForumTest.yml";
-    public static $useDraftSite = true;
+    protected static $fixture_file = "forum/tests/ForumTest.yml";
+    protected static $use_draft_site = true;
 
     public function testCanView()
     {
@@ -180,13 +179,13 @@ class ForumPageTest extends FunctionalTest
 
         /** @var ForumPage $private */
         $private = $this->objFromFixture(ForumPage::class, 'loggedInOnly');
-        
+
         /** @var ForumPage $limited */
         $limited = $this->objFromFixture(ForumPage::class, 'limitedToGroup');
-        
+
         /** @var ForumPage $noposting */
         $noposting = $this->objFromFixture(ForumPage::class, 'noPostingForum');
-        
+
         /** @var ForumPage $inherited */
         $inherited = $this->objFromFixture(ForumPage::class, 'inheritedForum');
 
@@ -363,7 +362,7 @@ class ForumPageTest extends FunctionalTest
         $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        
+
         /** @var Member $moderator */
         $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 
@@ -411,7 +410,7 @@ class ForumPageTest extends FunctionalTest
         $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        
+
         /** @var Member $moderator */
         $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 
@@ -442,7 +441,7 @@ class ForumPageTest extends FunctionalTest
         $spampost = $this->objFromFixture(Post::class, 'SpamSecondPost');
         $forum = $spampost->Forum();
         $author = $spampost->Author();
-        
+
         /** @var Member $moderator */
         $moderator = $this->objFromFixture(Member::class, 'moderator'); // moderator for "general" forum
 

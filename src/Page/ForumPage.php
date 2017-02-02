@@ -442,7 +442,7 @@ class ForumPage extends \Page
     {
         /** @var Post $post */
         $post = Post::get()->filter('ForumID', $this->ID)->sort(['ID DESC'])->first();
-        
+
         return $post;
     }
 
@@ -456,7 +456,7 @@ class ForumPage extends \Page
         $sqlQuery = new SQLQuery();
         $sqlQuery->setFrom('"Post"');
         $sqlQuery->setSelect('COUNT(DISTINCT("ThreadID"))');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
         $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
 
@@ -473,7 +473,7 @@ class ForumPage extends \Page
         $sqlQuery = new SQLQuery();
         $sqlQuery->setFrom('"Post"');
         $sqlQuery->setSelect('COUNT("Post"."ID")');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
         $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
 
@@ -491,7 +491,7 @@ class ForumPage extends \Page
         $sqlQuery = new SQLQuery();
         $sqlQuery->setFrom('"Post"');
         $sqlQuery->setSelect('COUNT(DISTINCT("AuthorID"))');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
         $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
 
@@ -546,9 +546,9 @@ class ForumPage extends \Page
 
     /*
 	 * Returns the Sticky Threads
-     * 
+     *
 	 * @param boolean $include_global Include Global Sticky Threads in the results (default: true)
-     * 
+     *
 	 * @return DataList
 	 */
     public function getStickyTopics($include_global = true)

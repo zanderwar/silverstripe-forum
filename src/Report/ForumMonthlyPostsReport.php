@@ -11,7 +11,7 @@ use SilverStripe\View\ArrayData;
  * Lists the Number of Posts made in the forums in the past months categorized
  * by month.
  */
-class ForumMonthlyPostReport extends Report
+class ForumMonthlyPostsReport extends Report
 {
     /**
      * @return string

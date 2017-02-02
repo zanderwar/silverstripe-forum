@@ -13,7 +13,7 @@ use SilverStripe\Security\Member;
 /**
  * @todo Write tests to cover the RSS feeds
  */
-class ForumHolderTest extends FunctionalTest
+class ForumHolderPageTest extends FunctionalTest
 {
     protected static $fixture_file = "ForumTest.yml";
 
@@ -36,6 +36,7 @@ class ForumHolderTest extends FunctionalTest
      */
     public function testGetForums()
     {
+        $this->assertTrue(true);
         /** @var ForumHolderPage $fh */
         $fh = $this->objFromFixture(ForumHolderPage::class, "fh");
         /** @var ForumHolderPageController $fhController */

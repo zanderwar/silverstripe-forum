@@ -35,7 +35,7 @@ class Post extends DataObject
 {
     /** @var string */
     private static $table_name = 'Post';
-    
+
     /** @var array */
     private static $db = array(
         "Content" => "Text",
@@ -122,6 +122,10 @@ class Post extends DataObject
     {
         if (!$member) {
             $member = Member::currentUser();
+        }
+
+        if (!$member || !$this->Author()) {
+            return parent::canView($member);
         }
 
         if ($this->Author()->ForumStatus != 'Normal') {

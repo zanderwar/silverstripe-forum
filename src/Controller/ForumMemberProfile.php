@@ -9,7 +9,7 @@ use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forum\Model\Post;
-use SilverStripe\Forum\Page\ForumHolder;
+use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\ORM\ManyManyList;
@@ -114,7 +114,7 @@ class ForumMemberProfile extends PageController
             return $this->httpError(404);
         }
 
-        return $this->renderWith(array('ForumMemberProfile_show', 'Page'));
+        return $this->renderWith(array(self::class . '_show', 'Page'));
     }
 
     /**
@@ -139,11 +139,11 @@ class ForumMemberProfile extends PageController
      */
     public function register()
     {
-        return array(
+        return $this->customise([
             "Title"    => _t('ForumMemberProfile.FORUMREGTITLE', 'Forum Registration'),
             "Subtitle" => _t('ForumMemberProfile.REGISTER', 'Register'),
             "Abstract" => $this->getForumHolder()->ProfileAbstract,
-        );
+        ]);
     }
 
     /**
@@ -183,7 +183,7 @@ class ForumMemberProfile extends PageController
         // The label and field name are intentionally common ("username"),
         // as most spam bots won't resist filling it out. The actual username field
         // on the forum is called "Nickname".
-        if (ForumHolder::$useHoneypotOnRegister) {
+        if (ForumHolderPage::$useHoneypotOnRegister) {
             $form->Fields()->push(
                 LiteralField::create(
                     'HoneyPot',
@@ -203,7 +203,7 @@ class ForumMemberProfile extends PageController
         }
 
         // Optional spam protection
-        if (class_exists('SpamProtectorManager') && ForumHolder::$useSpamProtectionOnRegister) {
+        if (class_exists('SpamProtectorManager') && ForumHolderPage::$useSpamProtectionOnRegister) {
             $form->enableSpamProtection();
         }
 
@@ -216,12 +216,12 @@ class ForumMemberProfile extends PageController
      * @param array $data User submitted data
      * @param Form  $form The used form
      *
-     * @return array|bool|HTTPResponse
+     * @return ViewableData|bool|HTTPResponse
      */
     public function doregister($data, $form)
     {
         // Check if the honeypot has been filled out
-        if (ForumHolder::$useHoneypotOnRegister) {
+        if (ForumHolderPage::$useHoneypotOnRegister) {
             if (isset($data['username'])) {
                 Injector::inst()->get('Logger')->log(sprintf(
                     'Forum honeypot triggered (data: %s)',
@@ -262,7 +262,6 @@ class ForumMemberProfile extends PageController
             Session::set("FormInfo.Form_RegistrationForm.data", $data);
 
             return $this->redirectBack();
-
         } elseif ($member = Member::get()->filter('Nickname', $data['Nickname'])->first()) {
             $errorMessage = _t(
                 'ForumMemberProfile.NICKNAMEEXISTS',
@@ -292,7 +291,7 @@ class ForumMemberProfile extends PageController
             return $this->redirect($data['BackURL']);
         }
 
-        return ["Form" => ForumHolder::get()->first()->ProfileAdd];
+        return $this->customise(["Form" => ForumHolderPage::get()->first()->ProfileAdd]);
     }
 
     /**
@@ -301,7 +300,7 @@ class ForumMemberProfile extends PageController
      * @param array $data    Data passed by the director
      * @param array $message Message and message type to output
      *
-     * @return array Returns the needed data to render the registration form.
+     * @return ViewableData Returns the needed data to render the registration form.
      */
     public function registerwithopenid($data, $message = null)
     {
@@ -311,12 +310,12 @@ class ForumMemberProfile extends PageController
             $message = "<p>" . _t('ForumMemberProfile.ENTEROPENID', 'Please enter your OpenID to continue the registration') . "</p>";
         }
 
-        return array(
+        return $this->customise([
             "Title"    => _t('ForumMemberProfile.SSFORUM'),
             "Subtitle" => _t('ForumMemberProfile.REGISTEROPENID', 'Register with OpenID'),
             "Abstract" => $message,
             "Form"     => $this->RegistrationWithOpenIDForm(),
-        );
+        ]);
     }
 
     /**
@@ -341,8 +340,8 @@ class ForumMemberProfile extends PageController
     /**
      * Register a new member
      *
-     * @param                          $data
-     * @param Form                     $form
+     * @param array $data
+     * @param Form  $form
      *
      * @return HTTPResponse
      */
@@ -521,7 +520,7 @@ class ForumMemberProfile extends PageController
      */
     public function edit()
     {
-        $holder = DataObject::get_one("ForumHolder");
+        $holder = DataObject::get_one(ForumHolderPage::class);
         $form   = $this->EditProfileForm();
 
         if (!$form && Member::currentUser()) {
@@ -531,12 +530,12 @@ class ForumMemberProfile extends PageController
             return $this->redirect('ForumMemberProfile/show/' . $this->Member()->ID);
         }
 
-        return array(
+        return $this->customise([
             "Title"    => "Forum",
             "Subtitle" => $holder->ProfileSubtitle,
             "Abstract" => $holder->ProfileAbstract,
             "Form"     => $form,
-        );
+        ]);
     }
 
     /**
@@ -552,7 +551,7 @@ class ForumMemberProfile extends PageController
         /** @var FieldList $fields */
         $fields    = $member ? $member->getForumFields($show_openid) : Member::singleton()->getForumFields($show_openid);
         $validator = $member ? $member->getForumValidator(false) : Member::singleton()->getForumValidator(false);
-        if ($holder = ForumHolder::get()->filter(["DisplaySignatures" => '1'])) {
+        if ($holder = ForumHolderPage::get()->filter(["DisplaySignatures" => '1'])) {
             $fields->push(TextareaField::create('Signature', 'Forum Signature'));
         }
 
@@ -642,13 +641,13 @@ class ForumMemberProfile extends PageController
      *
      * Used after saving changes to a member profile.
      *
-     * @return array Returns the needed data to render the page.
+     * @return ViewableData Returns the needed data to render the page.
      */
     public function thanks()
     {
-        return [
-            "Form" => ForumHolder::get()->first()->ProfileModify
-        ];
+        return $this->customise([
+            "Form" => ForumHolderPage::get()->first()->ProfileModify
+        ]);
     }
 
     /**
@@ -689,7 +688,7 @@ class ForumMemberProfile extends PageController
      */
     public function getForumHolder()
     {
-        $holders = ForumHolder::get();
+        $holders = ForumHolderPage::get();
         if ($holders) {
             foreach ($holders as $holder) {
                 if ($holder->canView()) {

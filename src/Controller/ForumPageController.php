@@ -31,7 +31,6 @@ use SilverStripe\Forum\Model\ForumThreadSubscription;
 use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\Model\PostAttachment;
 use SilverStripe\Forum\Page\ForumPage;
-use SilverStripe\Logging\Log;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -239,12 +238,12 @@ class ForumPageController extends PageController
             $post->extend('onAfterMarkAsSpam');
 
             // Log deletion event
-            Log::log(sprintf(
+            Injector::inst()->get('Logger')->addNotice(sprintf(
                 'Marked post #%d as spam, by moderator %s (#%d)',
                 $post->ID,
                 $currentUser->Email,
                 $currentUser->ID
-            ), Log::NOTICE);
+            ));
 
             // Suspend the member (rather than deleting him),
             // which gives him or a moderator the chance to revoke a decision.
@@ -253,13 +252,13 @@ class ForumPageController extends PageController
                 $author->write();
             }
 
-            Log::log(sprintf(
+            Injector::inst()->get('Logger')->addNotice(sprintf(
                 'Suspended member %s (#%d) for spam activity, by moderator %s (#%d)',
                 $author->Email,
                 $author->ID,
                 $currentUser->Email,
                 $currentUser->ID
-            ), Log::NOTICE);
+            ));
         }
 
         return (Director::is_ajax()) ? true : $this->redirect($this->Link());
@@ -290,13 +289,13 @@ class ForumPageController extends PageController
 
         // Log event
         $currentUser = Member::currentUser();
-        Injector::inst()->get('Logger')->log(sprintf(
+        Injector::inst()->get('Logger')->addNotice(sprintf(
             'Banned member %s (#%d), by moderator %s (#%d)',
             $member->Email,
             $member->ID,
             $currentUser->Email,
             $currentUser->ID
-        ), Log::NOTICE);
+        ));
 
         return ($r->isAjax()) ? true : $this->redirectBack();
     }
@@ -320,13 +319,13 @@ class ForumPageController extends PageController
 
         // Log event
         $currentUser = Member::currentUser();
-        Log::log(sprintf(
+        Injector::inst()->get('Logger')->addNotice(sprintf(
             'Ghosted member %s (#%d), by moderator %s (#%d)',
             $member->Email,
             $member->ID,
             $currentUser->Email,
             $currentUser->ID
-        ), Log::NOTICE);
+        ));
 
         return ($r->isAjax()) ? true : $this->redirectBack();
     }

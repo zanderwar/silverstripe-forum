@@ -4,8 +4,11 @@ namespace SilverStripe\Forum\Report;
 
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\View\ArrayData;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Reports\Report;
+use SilverStripe\Security\Member;
+use SilverStripe\View\ArrayData;
 
 /**
  * Forum Reports.
@@ -37,8 +40,9 @@ class ForumMemberSignupsReport extends Report
      */
     public function sourceRecords($params = array())
     {
-        $membersQuery = new SQLQuery();
-        $membersQuery->setFrom('"Member"');
+        $memberTable = DataObject::singleton()->getSchema()->tableName(Member::class);
+        $membersQuery = new SQLSelect();
+        $membersQuery->setFrom('"' . $memberTable . '"');
         $membersQuery->setSelect(array(
             'Month' => DB::getConn()->formattedDatetimeClause('"Created"', '%Y-%m'),
             'Signups' => 'COUNT("Created")'
@@ -76,4 +80,3 @@ class ForumMemberSignupsReport extends Report
         return 'Forum Reports';
     }
 }
-

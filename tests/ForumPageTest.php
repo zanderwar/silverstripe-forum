@@ -2,7 +2,9 @@
 
 namespace SilverStripe\Forum\Tests;
 
+use Monolog\Handler\NullHandler;
 use SilverStripe\Control\Email\Email;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\ORM\FieldType\DBDatetime;
@@ -22,8 +24,21 @@ use SilverStripe\Dev\FunctionalTest;
  */
 class ForumPageTest extends FunctionalTest
 {
-    protected static $fixture_file = "forum/tests/ForumTest.yml";
+    protected static $fixture_file = "ForumTest.yml";
     protected static $use_draft_site = true;
+
+    /**
+     * Push a null logger to ensure we don't get output while unit testing
+     *
+     * {@inheritDoc}
+     */
+    public function setUp()
+    {
+        parent::setUp();
+
+        $logger = Injector::inst()->get('Logger');
+        $logger->pushHandler(new NullHandler);
+    }
 
     public function testCanView()
     {
@@ -533,9 +548,6 @@ class ForumPageTest extends FunctionalTest
 
     /**
      * Confirm that when a post is deleted, Member with corresponding ID still exists
-     *
-     * @throws ValidationException
-     * @throws null
      */
     public function testPostDeletionMemberIntegrity()
     {

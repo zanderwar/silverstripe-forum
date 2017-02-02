@@ -2,6 +2,7 @@
 namespace SilverStripe\Forum\Report;
 
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Reports\Report;
@@ -29,7 +30,7 @@ class ForumMonthlyPostsReport extends Report
      */
     public function sourceRecords($params = array())
     {
-        $postTable = $this->getSchema()->tableName(Post::class);
+        $postTable = DataObject::singleton()->getSchema()->tableName(Post::class);
         $postsQuery = new SQLSelect();
         $postsQuery->setFrom('"' . $postTable . '"');
         $postsQuery->setSelect(array(

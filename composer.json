@@ -19,5 +19,15 @@
 	"require": {
 		"silverstripe/framework": "^4.0@dev",
 		"silverstripe/cms": "^4.0@dev"
+	},
+	"autoload": {
+		"psr-4": {
+			"SilverStripe\\Forum\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"SilverStripe\\Forum\\Tests\\": "tests/"
+		}
 	}
 }

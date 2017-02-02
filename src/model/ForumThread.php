@@ -160,10 +160,11 @@ class ForumThread extends DataObject
      * Hook up into canPost check
      *
      * @param null|Member $member
+     * @param array $context
      *
      * @return bool
      */
-    public function canCreate($member = null)
+    public function canCreate($member = null, $context = array())
     {
         if (!$member) {
             $member = Member::currentUser();

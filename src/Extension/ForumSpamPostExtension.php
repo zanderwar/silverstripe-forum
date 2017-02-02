@@ -3,19 +3,21 @@
 namespace SilverStripe\Forum\Extension;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\ORM\DataQuery;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\Member;
 use SilverStripe\ORM\DataExtension;
-use SQLQuery;
 
 class ForumSpamPostExtension extends DataExtension
 {
 
-    public function augmentSQL(SQLQuery &$query)
+    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
         if (Config::inst()->forClass('Post')->allow_reading_spam) {
             return;
         }
 
+        /** @var Member $member */
         $member = Member::currentUser();
         $forum = $this->owner->Forum();
 

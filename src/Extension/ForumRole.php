@@ -2,8 +2,12 @@
 
 namespace SilverStripe\Forum\Extension;
 
-use SilverStripe\Forum\Page\ForumHolder;
+use SilverStripe\Forum\Form\CheckableOption;
+use SilverStripe\Forum\Form\ForumCountryDropdownField;
+use SilverStripe\Forum\Page\ForumHolderPageController;
+use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Forms\FileField;
@@ -23,8 +27,6 @@ use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Security\Member;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\View\Requirements;
-use SilverStripe\Core\Extension;
 use Zend_Locale;
 
 /**
@@ -40,8 +42,10 @@ class ForumRole extends DataExtension
 
     /**
      * Edit the given query object to support queries for this extension
+     * @param SQLSelect $query
+     * @param DataQuery $dataQuery
      */
-    public function augmentSQL(SQLQuery &$query)
+    public function augmentSQL(SQLSelect $query, DataQuery $dataQuery = null)
     {
     }
 
@@ -85,7 +89,7 @@ class ForumRole extends DataExtension
         'CityPublic' => 'Boolean',
         'CountryPublic' => 'Boolean',
         'EmailPublic' => 'Boolean',
-        'LastViewed' => 'SS_Datetime',
+        'LastViewed' => 'Datetime',
         'Signature' => 'Text',
         'ForumStatus' => 'Enum("Normal, Banned, Ghost", "Normal")',
         'SuspendedUntil' => 'Date'

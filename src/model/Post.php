@@ -186,10 +186,11 @@ class Post extends DataObject
      * Check if user can add new posts - hook up into canPost.
      *
      * @param null|Member $member
+     * @param array $context
      *
      * @return bool
      */
-    public function canCreate($member = null)
+    public function canCreate($member = null, $context = array())
     {
         if (!$member) {
             $member = Member::currentUser();

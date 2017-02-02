@@ -15,8 +15,7 @@ use SilverStripe\Security\Member;
  */
 class ForumHolderTest extends FunctionalTest
 {
-
-    public static $fixtureFile = "forum/tests/ForumTest.yml";
+    protected static $fixture_file = "ForumTest.yml";
 
     /**
      * Setup

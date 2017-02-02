@@ -2,18 +2,15 @@
 
 namespace SilverStripe\Forum\Tests;
 
-
+use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Security\Member;
-
 
 class ForumMemberProfileTest extends FunctionalTest
 {
-
-    static $fixtureFile = "forum/tests/ForumTest.yml";
-    static $useDraftSite = true;
+    protected static $fixture_file = "ForumTest.yml";
+    protected static $use_draft_site = true;
 
     public function testRegistrationWithHoneyPot()
     {

@@ -5,7 +5,8 @@ namespace SilverStripe\Forum\Model;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forum\Page\ForumHolder;
+use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBVarchar;
 
@@ -34,12 +35,12 @@ class ForumCategory extends DataObject
 
     /** @var array */
     private static $has_one = array(
-        'ForumHolder' => 'ForumHolder'
+        'ForumHolder' => ForumHolderPage::class
     );
 
     /** @var array */
     private static $has_many = array(
-        'Forums' => 'Forum'
+        'Forums' => ForumPage::class
     );
 
     /** @var string */

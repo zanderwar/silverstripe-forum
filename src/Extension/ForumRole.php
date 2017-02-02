@@ -6,7 +6,9 @@ use SilverStripe\Control\Email\Email;
 use SilverStripe\Forms\Validator;
 use SilverStripe\Forum\Form\CheckableOption;
 use SilverStripe\Forum\Form\ForumCountryDropdownField;
+use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\Page\ForumHolderPage;
+use SilverStripe\Forum\Page\ForumPage;
 use SilverStripe\Forum\Page\ForumHolderPageController;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
@@ -103,11 +105,11 @@ class ForumRole extends DataExtension
     );
 
     private static $has_many = array(
-        'ForumPosts' => 'Post'
+        'ForumPosts' => Post::class
     );
 
     private static $belongs_many_many = array(
-        'ModeratedForums' => 'Forum'
+        'ModeratedForums' => ForumPage::class
     );
 
     private static $defaults = array(

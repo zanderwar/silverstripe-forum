@@ -7,6 +7,7 @@ use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
+use SilverStripe\Forum\Model\Post;
 
 /**
  * Attachments for posts (one post can have many attachments)
@@ -21,7 +22,7 @@ class PostAttachment extends File
 
     /** @var array */
     private static $has_one = array(
-        "Post" => "Post"
+        "Post" => Post::class
     );
 
     /** @var array */

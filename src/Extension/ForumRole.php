@@ -223,11 +223,11 @@ class ForumRole extends DataExtension
      */
     public function getForumFields($showIdentityURL = false, $addmode = false)
     {
-        $gravatarText = (DataObject::get_one("ForumHolder", "\"AllowGravatars\" = 1")) ? '<small>'. _t('ForumRole.CANGRAVATAR', 'If you use Gravatars then leave this blank') .'</small>' : "";
+        $gravatarText = (DataObject::get_one(ForumHolderPage::class, "\"AllowGravatars\" = 1")) ? '<small>'. _t('ForumRole.CANGRAVATAR', 'If you use Gravatars then leave this blank') .'</small>' : "";
 
         //Sets the upload folder to the Configurable one set via the ForumHolder or overridden via Config::inst()->update().
         $avatarField = new FileField('Avatar', _t('ForumRole.AVATAR', 'Avatar Image') .' '. $gravatarText);
-        $avatarField->setFolderName(Config::inst()->get('ForumHolder', 'avatars_folder'));
+        $avatarField->setFolderName(Config::inst()->get(ForumHolderPage::class, 'avatars_folder'));
         $avatarField->getValidator()->setAllowedExtensions(array('jpg', 'jpeg', 'gif', 'png'));
 
         $personalDetailsFields = new CompositeField(
@@ -240,7 +240,7 @@ class ForumRole extends DataExtension
             new CheckableOption('CompanyPublic', new TextField('Company', _t('ForumRole.COMPANY', 'Company')), true),
             new CheckableOption('CityPublic', new TextField('City', _t('ForumRole.CITY', 'City')), true),
             new CheckableOption("CountryPublic", new ForumCountryDropdownField("Country", _t('ForumRole.COUNTRY', 'Country')), true),
-            new CheckableOption("EmailPublic", new EmailField("SilverStripe\\Control\\Email\\Email", _t('ForumRole.EMAIL', 'SilverStripe\\Control\\Email\\Email'))),
+            new CheckableOption("EmailPublic", new EmailField("Email", _t('ForumRole.EMAIL', 'Email'))),
             new ConfirmedPasswordField("Password", _t('ForumRole.PASSWORD', 'Password')),
             $avatarField
         );
@@ -250,7 +250,7 @@ class ForumRole extends DataExtension
                 new ReadonlyField("ForumRank", _t('ForumRole.RATING', 'User rating'))
             );
         }
-        $personalDetailsFields->setID('PersonalDetailsFields');
+        // $personalDetailsFields->setId('PersonalDetailsFields');
 
         $fieldset = new FieldList(
             $personalDetailsFields

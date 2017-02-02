@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Forum\Form;
 
+require_once 'Zend/Locale.php';
+
 use SilverStripe\Security\Member;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Forms\DropdownField;

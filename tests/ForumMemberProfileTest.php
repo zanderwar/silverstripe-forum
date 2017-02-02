@@ -38,9 +38,11 @@ class ForumMemberProfileTest extends FunctionalTest
             "Email" => 'test@test.com',
         );
 
-        $invalidData = array_merge($baseData, array('action_doregister' => 1, 'username' => 'spamtastic'));
-        $response = $this->post('ForumMemberProfile/RegistrationForm', $invalidData);
-        $this->assertEquals(403, $response->getStatusCode());
+        if (class_exists('SpamProtectorManager')) {
+            $invalidData = array_merge($baseData, array('action_doregister' => 1, 'username' => 'spamtastic'));
+            $response = $this->post('ForumMemberProfile/RegistrationForm', $invalidData);
+            $this->assertEquals(403, $response->getStatusCode());
+        }
 
         $validData = array_merge($baseData, array('action_doregister' => 1));
         $response = $this->post('ForumMemberProfile/RegistrationForm', $validData);
@@ -60,7 +62,7 @@ class ForumMemberProfileTest extends FunctionalTest
         $response = $this->get('ForumMemberProfile/edit/' . $normalMember->ID);
 
         $this->assertNotContains(
-            _t('ForumRole.SUSPENSIONNOTE'),
+            _t('ForumRole.SUSPENSIONNOTE', 'This forum account has been suspended.'),
             $response->getBody(),
             'Normal profiles don\'t show suspension note'
         );
@@ -69,7 +71,7 @@ class ForumMemberProfileTest extends FunctionalTest
         $this->loginAs($suspendedMember);
         $response = $this->get('ForumMemberProfile/edit/' . $suspendedMember->ID);
         $this->assertContains(
-            _t('ForumRole.SUSPENSIONNOTE'),
+            _t('ForumRole.SUSPENSIONNOTE', 'This forum account has been suspended.'),
             $response->getBody(),
             'Suspended profiles show suspension note'
         );

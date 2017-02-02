@@ -8,7 +8,7 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Convert;
 use SilverStripe\Forum\Model\ForumThread;
 use SilverStripe\Forum\Model\Post;
-use SilverStripe\Forum\Page\ForumHolder;
+use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\Forum\Search\ForumSearch;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -20,7 +20,7 @@ use SilverStripe\View\Requirements;
 
 /**
  * Class ForumHolderController
- * 
+ *
  * @package SilverStripe\Forum\Pages
  */
 class ForumHolderPageController extends \PageController
@@ -292,7 +292,7 @@ class ForumHolderPageController extends \PageController
 
         if (!isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && !isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
             // just to get the version data..
-            $available = ForumHolder::newPostsAvailable($this->ID, $data, null, null, $forumID, $threadID);
+            $available = ForumHolderPage::newPostsAvailable($this->ID, $data, null, null, $forumID, $threadID);
 
             // No information provided by the client, just return the last posts
             $rss = new RSSFeed(
@@ -326,7 +326,7 @@ class ForumHolderPageController extends \PageController
             if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && is_numeric($_SERVER['HTTP_IF_NONE_MATCH'])) {
                 $etag = (int)$_SERVER['HTTP_IF_NONE_MATCH'];
             }
-            if ($available = ForumHolder::newPostsAvailable($this->ID, $data, $since, $etag, $forumID, $threadID)) {
+            if ($available = ForumHolderPage::newPostsAvailable($this->ID, $data, $since, $etag, $forumID, $threadID)) {
                 HTTP::register_modification_timestamp($data['last_created']);
                 $rss = new RSSFeed(
                     $this->getRecentPosts(50, $forumID, $threadID, $etag),
@@ -365,12 +365,12 @@ class ForumHolderPageController extends \PageController
      */
     public function GlobalAnnouncements()
     {
-        //dump(ForumHolder::baseForumTable());
+        //dump(ForumHolderPage::baseForumTable());
 
         // Get all the forums with global sticky threads
         return ForumThread::get()
             ->filter('IsGlobalSticky', 1)
-            ->innerJoin(ForumHolder::baseForumTable(), '"ForumThread"."ForumID"="ForumPage"."ID"', "ForumPage")
+            ->innerJoin(ForumHolderPage::baseForumTable(), '"ForumThread"."ForumID"="ForumPage"."ID"', "ForumPage")
             ->where('"ForumPage"."ParentID" = ' . $this->ID)
             ->filterByCallback(
                 function ($thread) {

@@ -2,13 +2,11 @@
 
 namespace SilverStripe\Forum\Tests;
 
-
-use SilverStripe\Security\SecurityToken;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\Page\ForumPage;
 use SilverStripe\Security\Member;
-use SilverStripe\Forum\Model\Post;
-use SilverStripe\Dev\FunctionalTest;
-
+use SilverStripe\Security\SecurityToken;
 
 /**
  * Class PostTest
@@ -42,14 +40,13 @@ class PostTest extends FunctionalTest
      */
     public function tearDown()
     {
-        parent::tearDown();
-
         //if the token is turned on reset it before the next test run
         if ($this->useToken) {
             SecurityToken::enable();
         } else {
             SecurityToken::disable();
         }
+        parent::tearDown();
     }
 
     public function testPermissions()

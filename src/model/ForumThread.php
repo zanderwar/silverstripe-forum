@@ -16,6 +16,7 @@ use SilverStripe\Control\Session;
 use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\Email\Email;
 use SilverStripe\Control\Director;
@@ -221,16 +222,19 @@ class ForumThread extends DataObject
      * Return the number of posts in this thread. We could use count on
      * the dataobject set but that is slower and causes a performance overhead
      *
-     * @todo SS4 compat
      * @return int
      */
     public function getNumPosts()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT("Post"."ID")');
-        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
+        $schema = $this->getSchema();
+        $postTable = $schema->tableName(Post::class);
+        $memberTable = $schema->tableName(Member::class);
+
+        $sqlQuery = new SQLSelect();
+        $sqlQuery->setFrom('"' . $postTable . '"');
+        $sqlQuery->setSelect('COUNT("' . $postTable . '"."ID")');
+        $sqlQuery->addInnerJoin($memberTable, '"' . $postTable . '"."AuthorID" = "Member"."ID"');
+        $sqlQuery->addWhere('"' . $memberTable . '"."ForumStatus" = \'Normal\'');
         $sqlQuery->addWhere('"ThreadID" = ' . $this->ID);
 
         return $sqlQuery->execute()->value();

@@ -2,10 +2,12 @@
 
 namespace SilverStripe\Forum\Page;
 
+use Page;
 use SilverStripe\Forum\Model\ForumCategory;
 use SilverStripe\Forum\Model\ForumThread;
 use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\ORM\ForumDataQuery;
+use SilverStripe\Forum\Page\QuickQueries;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBEnum;
 use SilverStripe\ORM\FieldType\DBText;
@@ -50,8 +52,10 @@ use SilverStripe\Forms\FieldList;
  * @method ManyManyList Moderators
  * @method ManyManyList PosterGroups
  */
-class ForumPage extends \Page
+class ForumPage extends Page
 {
+    use QuickQueries;
+
     /** @var string */
     private static $allowed_children = 'none';
 
@@ -425,7 +429,7 @@ class ForumPage extends \Page
     {
         /** @var ForumHolderPage $holder */
         $holder = $this->Parent();
-        if ($holder->ClassName == 'ForumHolderPage') {
+        if ($holder->ClassName == ForumHolderPage::class) {
             return $holder;
         }
 
@@ -448,54 +452,30 @@ class ForumPage extends \Page
 
     /**
      * Get the number of total topics (threads) in this Forum
-     * @todo
      * @return int Returns the number of topics (threads)
      */
     public function getNumTopics()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT(DISTINCT("ThreadID"))');
-        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        return $this->getNumQuery('COUNT(DISTINCT("ThreadID"))', true, false);
     }
 
     /**
      * Get the number of total posts
-     * @todo
      * @return int Returns the number of posts
      */
     public function getNumPosts()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT("Post"."ID")');
-        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        return $this->getNumQuery('COUNT("Post"."ID")', true, false);
     }
 
 
     /**
      * Get the number of distinct Authors
-     * @todo
      * @return int
      */
     public function getNumAuthors()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT(DISTINCT("AuthorID"))');
-        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"ForumID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        return $this->getNumQuery('COUNT(DISTINCT("AuthorID"))', true, false);
     }
 
     /**
@@ -511,11 +491,12 @@ class ForumPage extends \Page
         // Get the underlying query and change it to return the ThreadID and Max(Created) and Max(ID) for each thread
         // of those posts
         $postQuery = $posts->dataQuery()->query();
+        $postTable = $this->getSchema()->tableName(Post::class);
 
         $postQuery
             ->setSelect(array())
-            ->selectField('MAX("Post"."Created")', 'PostCreatedMax')
-            ->selectField('MAX("Post"."ID")', 'PostIDMax')
+            ->selectField('MAX("' . $postTable . '"."Created")', 'PostCreatedMax')
+            ->selectField('MAX("' . $postTable . '"."ID")', 'PostIDMax')
             ->selectField('"ThreadID"')
             ->setGroupBy('"ThreadID"')
             ->addWhere(sprintf('"ForumID" = \'%s\'', $this->ID))
@@ -538,7 +519,7 @@ class ForumPage extends \Page
             ->setDistinct(false);
 
         // Alter the forum threads list to use the new query
-        $threads = $threads->setDataQuery(new ForumDataQuery('ForumThread', $threadQuery));
+        $threads = $threads->setDataQuery(new ForumDataQuery(ForumThread::class, $threadQuery));
 
         // And return the results
         return $threads->exists() ? PaginatedList::create($threads, $_GET) : null;

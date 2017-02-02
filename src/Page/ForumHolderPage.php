@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Forum\Page;
 
+use Page;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
@@ -24,7 +25,10 @@ use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\OptionsetField;
 use SilverStripe\Forum\Model\ForumCategory;
 use SilverStripe\Forum\Model\Post;
+use SilverStripe\Forum\Page\ForumPage;
+use SilverStripe\Forum\Page\QuickQueries;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBEnum;
 use SilverStripe\ORM\FieldType\DBHTMLText;
@@ -41,6 +45,7 @@ use SilverStripe\ORM\Versioning\Versioned;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Security\Authenticator;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\Queries\SQLSelect;
 
 /**
  * ForumHolder represents the top forum overview page. Its children
@@ -64,9 +69,11 @@ use SilverStripe\ORM\ArrayList;
  * @property DBEnum      CanPostType
  * @method HasManyList Categories
  */
-class ForumHolderPage extends \Page
+class ForumHolderPage extends Page
 {
-    private static $db = array(
+    use QuickQueries;
+
+    private static $db = [
         "HolderSubtitle"    => "Varchar(200)",
         "ProfileSubtitle"   => "Varchar(200)",
         "ForumSubtitle"     => "Varchar(200)",
@@ -81,11 +88,11 @@ class ForumHolderPage extends \Page
         "GravatarType"      => "Varchar(10)",
         "ForbiddenWords"    => "Text",
         "CanPostType"       => "Enum('Anyone, LoggedInUsers, OnlyTheseUsers, NoOne', 'LoggedInUsers')",
-    );
+    ];
 
-    private static $has_many = array(
+    private static $has_many = [
         "Categories" => ForumCategory::class
-    );
+    ];
 
     /** @var string */
     private static $avatars_folder = 'forum/avatars/';
@@ -94,7 +101,9 @@ class ForumHolderPage extends \Page
     private static $attachments_folder = 'forum/attachments/';
 
     /** @var array */
-    private static $allowed_children = array('Forum');
+    private static $allowed_children = [
+        ForumPage::class
+    ];
 
     /** @var array */
     private static $defaults = array(
@@ -273,7 +282,7 @@ class ForumHolderPage extends \Page
             return;
         }
 
-        $forumHolder = ForumHolder::get()->first();
+        $forumHolder = self::get()->first();
         if (!$forumHolder) {
             return;
         }
@@ -297,19 +306,16 @@ class ForumHolderPage extends \Page
         }
 
         switch ($this->urlParams['Action']) {
-            case 'search': {
+            case 'search':
                 return '<a href="' . $this->Link() . '">' . $this->Title . '</a> &raquo; ' . _t('SEARCHBREADCRUMB', 'Search');
-            }
             break;
 
-            case 'memberlist': {
+            case 'memberlist':
                 return '<a href="' . $this->Link() . '">' . $this->Title . '</a> &raquo; ' . _t('MEMBERLIST', 'Member List');
-            }
             break;
 
-            case 'popularthreads': {
+            case 'popularthreads':
                 return '<a href="' . $this->Link() . '">' . $this->Title . '</a> &raquo; ' . _t('MOSTPOPULARTHREADS', 'Most popular threads');
-            }
             break;
         }
 
@@ -318,38 +324,23 @@ class ForumHolderPage extends \Page
 
     /**
      * Get the number of total posts
-     * @todo
+     *
      * @return int Returns the number of posts
      */
     public function getNumPosts()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT("Post"."ID")');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addInnerJoin('SilverStripe\\CMS\\Model\\SiteTree', '"Post"."ForumID" = "SiteTree"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"SiteTree"."ParentID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        $postTable = $this->getSchema()->tableName(Post::class);
+        return $this->getNumQuery('COUNT("' . $postTable . '"."ID")');
     }
 
     /**
      * Get the number of total topics (threads)
-     * @todo
+     *
      * @return int Returns the number of topics (threads)
      */
     public function getNumTopics()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT(DISTINCT("ThreadID"))');
-        $sqlQuery->addInnerJoin('SilverStripe\\Security\\Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addInnerJoin('SilverStripe\\CMS\\Model\\SiteTree', '"Post"."ForumID" = "SiteTree"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"SiteTree"."ParentID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        return $this->getNumQuery('COUNT(DISTINCT("ThreadID"))');
     }
 
     /**
@@ -359,16 +350,7 @@ class ForumHolderPage extends \Page
      */
     public function getNumAuthors()
     {
-        $sqlQuery = new SQLQuery();
-        $sqlQuery->setFrom('"Post"');
-        $sqlQuery->setSelect('COUNT(DISTINCT("AuthorID"))');
-        // @todo get these tables names from the DataObjectSchema
-        $sqlQuery->addInnerJoin('Member', '"Post"."AuthorID" = "Member"."ID"');
-        $sqlQuery->addInnerJoin('SiteTree', '"Post"."ForumID" = "SiteTree"."ID"');
-        $sqlQuery->addWhere('"Member"."ForumStatus" = \'Normal\'');
-        $sqlQuery->addWhere('"SiteTree"."ParentID" = ' . $this->ID);
-
-        return $sqlQuery->execute()->value();
+        return $this->getNumQuery('COUNT(DISTINCT("AuthorID"))');
     }
 
     /**
@@ -500,7 +482,7 @@ class ForumHolderPage extends \Page
         if ((class_exists('SilverStripe\\Dev\\SapphireTest', false) && SapphireTest::is_running_test())
             || $stage == "Stage"
         ) {
-            return SiteTree::class;
+            return DataObject::singleton()->getSchema()->tableName(SiteTree::class);
         } else {
             return "SiteTree_Live";
         }
@@ -571,7 +553,7 @@ class ForumHolderPage extends \Page
 
         $posts = Post::get()
             ->leftJoin('ForumThread', '"Post"."ThreadID" = "ForumThread"."ID"')
-            ->leftJoin(ForumHolder::baseForumTable(), '"ForumPage"."ID" = "Post"."ForumID"', 'ForumPage')
+            ->leftJoin(self::baseForumTable(), '"ForumPage"."ID" = "Post"."ForumID"', 'ForumPage')
             ->limit($limit)
             ->sort('"Post"."ID"', 'DESC')
             ->where($filter);
@@ -626,7 +608,7 @@ class ForumHolderPage extends \Page
         $version = DB::query("
 			SELECT MAX(\"Post\".\"ID\") AS \"LastID\", MAX(\"Post\".\"Created\") AS \"LastCreated\"
 			FROM \"Post\"
-			JOIN \"" . ForumHolder::baseForumTable() . "\" AS \"ForumPage\" ON \"Post\".\"ForumID\"=\"ForumPage\".\"ID\"
+			JOIN \"" . self::baseForumTable() . "\" AS \"ForumPage\" ON \"Post\".\"ForumID\"=\"ForumPage\".\"ID\"
 			WHERE $filter")->first();
 
         if ($version == false) {

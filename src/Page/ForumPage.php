@@ -6,7 +6,6 @@ use SilverStripe\Forum\Model\ForumCategory;
 use SilverStripe\Forum\Model\ForumThread;
 use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\ORM\ForumDataQuery;
-use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBEnum;
 use SilverStripe\ORM\FieldType\DBText;
@@ -110,7 +109,7 @@ class ForumPage extends \Page
     /**
      * Check if the user can view the forum.
      *
-     * @param null $member
+     * @param null|Member $member
      *
      * @return bool
      */
@@ -126,7 +125,7 @@ class ForumPage extends \Page
     /**
      * Check if the user can post to the forum and edit his own posts.
      *
-     * @param null $member
+     * @param null|Member $member
      *
      * @return bool
      */
@@ -180,7 +179,7 @@ class ForumPage extends \Page
     /**
      * Check if user has access to moderator panel and can delete posts and threads.
      *
-     * @param null $member
+     * @param null|Member $member
      *
      * @return bool
      */
@@ -210,7 +209,7 @@ class ForumPage extends \Page
     /**
      * Can we attach files to topics/posts inside this forum?
      *
-     * @param null $member
+     * @param null|Member $member
      *
      * @return bool Set to TRUE if the user is allowed to, to FALSE if they're
      *              not
@@ -249,8 +248,8 @@ class ForumPage extends \Page
             $category->write();
         }
 
-        if (!ForumHolder::get()->exists()) {
-            $forumholder             = new ForumHolder();
+        if (!ForumHolderPage::get()->exists()) {
+            $forumholder             = new ForumHolderPage();
             $forumholder->Title      = "Forums";
             $forumholder->URLSegment = "forums";
             $forumholder->Content    = "<p>" . _t('Forum.WELCOMEFORUMHOLDER', 'Welcome to SilverStripe Forum Module! This is the default ForumHolder page. You can now add forums.') . "</p>";
@@ -278,11 +277,12 @@ class ForumPage extends \Page
      */
     public function getShowInCategories()
     {
+        /** @var ForumHolderPage $holder */
         $holder = $this->getForumHolder();
         if ($holder) {
             return $holder->getShowInCategories();
         }
-        
+
         return false;
     }
 
@@ -419,12 +419,13 @@ class ForumPage extends \Page
      * Helper Method from the template includes. Uses $ForumHolder so in order for it work
      * it needs to be included on this page
      *
-     * @return ForumHolder
+     * @return ForumHolderPage|bool
      */
     public function getForumHolder()
     {
+        /** @var ForumHolderPage $holder */
         $holder = $this->Parent();
-        if ($holder->ClassName == 'ForumHolder') {
+        if ($holder->ClassName == 'ForumHolderPage') {
             return $holder;
         }
 
@@ -439,7 +440,10 @@ class ForumPage extends \Page
      */
     public function getLatestPost()
     {
-        return Post::get()->filter('ForumID', $this->ID)->sort(['ID DESC'])->first();
+        /** @var Post $post */
+        $post = Post::get()->filter('ForumID', $this->ID)->sort(['ID DESC'])->first();
+        
+        return $post;
     }
 
     /**
@@ -496,8 +500,8 @@ class ForumPage extends \Page
 
     /**
      * Returns the Topics (the first Post of each Thread) for this Forum
-     * 
-     * @return DataList
+     *
+     * @return PaginatedList|null
      */
     public function getTopics()
     {

@@ -36,10 +36,14 @@ use SilverStripe\Control\Director;
  */
 class ForumThread extends DataObject
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     private static $table_name = 'ForumThread';
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private static $db = array(
         "Title"          => "Varchar(255)",
         "NumViews"       => "Int",
@@ -48,17 +52,23 @@ class ForumThread extends DataObject
         "IsGlobalSticky" => "Boolean"
     );
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private static $has_one = array(
         'Forum' => ForumPage::class
     );
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private static $has_many = array(
         'Posts' => Post::class
     );
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private static $defaults = array(
         'NumViews'       => 0,
         'IsSticky'       => false,
@@ -66,7 +76,9 @@ class ForumThread extends DataObject
         'IsGlobalSticky' => false
     );
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private static $indexes = array(
         'IsSticky'       => true,
         'IsGlobalSticky' => true

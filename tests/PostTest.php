@@ -117,7 +117,7 @@ class PostTest extends FunctionalTest
         $this->assertEquals($first->Title, 'Another Test Thread');
     }
 
-    public function testIssFirstPost()
+    public function testIsFirstPost()
     {
         /** @var Post $first */
         $first = $this->objFromFixture(Post::class, 'Post1');
@@ -337,12 +337,12 @@ class PostTest extends FunctionalTest
         $post->Content = "Original Content";
         $post->write();
 
-        $this->assertNull($post->Updated);
+        $this->assertSame($post->Updated, $post->LastEdited);
         sleep(2);
         $post->Content = "Some Content Now";
         $post->write();
 
-        $this->assertNotNull($post->Updated);
+        $this->assertFalse($post->Updated);
     }
 
     public function testRSSContent()

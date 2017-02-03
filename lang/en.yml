@@ -37,14 +37,14 @@ en:
     NOPOSTPERMISSION: 'I''m sorry, but you do not have permission post to this forum.'
     PLURALNAME: Forums
     POSTSFORUMIDUPDATED: 'Forum posts forum ID added'
-    POSTTOTOPIC: 'Posts to the %s topic'
+    POSTTOTOPIC: 'Posts to the {title} topic'
     READANYONE: Anyone
     READLIST: 'Only these people (choose from list)'
     READLOGGEDIN: 'Logged-in users'
     READNOONE: 'Nobody. Make Forum Read Only'
     REMOVE: remove
     REPLYFORMPOST: Post
-    RSSFORUM: 'Posts to the ''%s'' forum'
+    RSSFORUM: 'Posts to the ''{title}'' forum'
     RSSFORUMS: 'Posts to all forums'
     SAVE: Save
     SINGULARNAME: Forum
@@ -63,7 +63,7 @@ en:
     WAVATAR: Wavatar
   Forum_ss:
     ANNOUNCEMENTS: Announcements
-    GOTOTHISTOPIC: 'Go to the %s topic'
+    GOTOTHISTOPIC: 'Go to the {topic} topic'
     LASTPOST: 'Last Post'
     NEWTOPIC: 'Click here to start a new topic'
     NEWTOPICIMAGE: 'Start new topic'
@@ -77,7 +77,7 @@ en:
     TOPIC: Topic
   ForumAdmin_right_ss:
     EDITPAGE: 'Edit Page'
-    WELCOME: 'Welcome to %s! Please choose click on one of the entries on the left pane.'
+    WELCOME: 'Welcome to {application}! Please choose click on one of the entries on the left pane.'
   ForumFooter_ss:
     CURRENTLYON: 'Currently Online:'
     ISONLINE: ' is online'
@@ -98,7 +98,7 @@ en:
     PLURALNAME: 'Forum Holders'
     POPULARTHREADS: 'Most popular forum threads'
     POSTSTOALLFORUMS: 'Posts to all forums'
-    SEARCHEDFOR: 'You searched for ''%s''.'
+    SEARCHEDFOR: 'You searched for ''{title}''.'
     SEARCHRESULTS: 'Search results'
     SINGULARNAME: 'Forum Holder'
   ForumHolder_ss:
@@ -193,7 +193,7 @@ en:
     EMAIL: Email
     FIRSTNAME: 'First Name'
     FORUMRANK: 'Forum ranking'
-    LASTPOST: 'Last post: %s '
+    LASTPOST: 'Last post: {ago} '
     LATESTPOSTS: 'Latest Posts'
     NICKNAME: Nickname
     NORANK: 'No ranking'
@@ -204,12 +204,12 @@ en:
     USERSAVATAR: '&#39;s avatar'
   ForumMember_ForgotNicknameEmail_ss:
     HI: 'Hi,'
-    MESSAGE: 'Here''s your user name for <a href="home/">%s</a>.'
+    MESSAGE: 'Here''s your user name for <a href="home/">{href}</a>.'
     USERNAME: 'Username:'
   ForumMember_NotifyModerator_ss:
     BY: by
     DATEON: on
-    HI: 'Hi %s,'
+    HI: 'Hi {name},'
     MODERATORMODERATE: 'Moderate the thread'
     MODERATORNEWPOSTMESSAGE: 'A forum post has been added or edited'
     MODERATORNEWTHREADMESSAGE: 'New forum thread has been started'
@@ -217,7 +217,7 @@ en:
     MODERATORSIGNOFF: 'Yours truly,\nThe Forum Robot.'
   ForumMember_TopicNotification_ss:
     BY: by
-    HI: 'Hi %s,'
+    HI: 'Hi {name},'
     NEWPOSTMESSAGE: 'A new post has been added to a topic you''ve subscribed to'
     REPLYLINK: 'View the topic'
     UNSUBSCRIBETEXT: 'Unsubscribe from the topic'
@@ -242,7 +242,7 @@ en:
     PERSONAL: 'Personal Details'
     RATING: 'User rating'
     SURNAME: Surname
-    SUSPENSIONEMAILNOTE: 'Please contact %s to resolve this issue.'
+    SUSPENSIONEMAILNOTE: 'Please contact {adminemail} to resolve this issue.'
     SUSPENSIONNOTE: 'This forum account has been suspended.'
     TICK: 'Tick the fields to show in public profile'
     TRANSFERSUCCEEDED: 'The data transfer has succeeded. However, to complete it, you must delete the ForumMember table. To do this, execute the query \"DROP TABLE ''ForumMember''\".'
@@ -276,7 +276,7 @@ en:
     EDIT: Edit
     MARKASSPAM: 'Mark as Spam'
     REPLYLINK: 'Post Reply'
-    RESPONSE: 'Re: %s'
+    RESPONSE: 'Re: {title}'
     SHOWLINK: 'Show Thread'
     PLURALNAME: Posts
     SINGULARNAME: Post
@@ -297,7 +297,7 @@ en:
   TopicListing_ss:
     BY: by
     CLICKTOUSER: 'Click here to view'
-    GOTOFIRSTUNREAD: 'Go to the first unread post in the %s topic.'
+    GOTOFIRSTUNREAD: 'Go to the first unread post in the {topic} topic.'
     ON: on
   VirtualPage:
     DESCRIPTION: 'Displays the content of another page'
@@ -309,7 +309,7 @@ en:
     MOSTPOPULARTHREADS: 'Most popular threads'
     SEARCHBREADCRUMB: Search
   Forum.ss:
-    GOTOTHISTOPIC: 'Go to the %s topic'
+    GOTOTHISTOPIC: 'Go to the {topic} topic'
   ForumCategory:
     PLURALNAME: 'Forum Categories'
     SINGULARNAME: 'Forum Category'

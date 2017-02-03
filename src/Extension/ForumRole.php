@@ -444,9 +444,10 @@ class ForumRole extends DataExtension
         $adminEmail = Config::inst()->get(Email::class, 'admin_email');
 
         if ($adminEmail) {
-            $msg .= ' ' . sprintf(
-                _t('ForumRole.SUSPENSIONEMAILNOTE', 'Please contact %s to resolve this issue.'),
-                $adminEmail
+            $msg .= ' ' . _t(
+                'ForumRole.SUSPENSIONEMAILNOTE',
+                'Please contact {adminemail} to resolve this issue.',
+                ['adminemail' => $adminEmail]
             );
         }
         return $msg;

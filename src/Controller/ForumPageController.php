@@ -89,8 +89,14 @@ class ForumPageController extends PageController
 
         Requirements::themedCSS('Forum', 'all');
 
-        RSSFeed::linkToFeed($this->Parent()->Link("rss/forum/$this->ID"), sprintf(_t('Forum.RSSFORUM', "Posts to the '%s' forum"), $this->Title));
-        RSSFeed::linkToFeed($this->Parent()->Link("rss"), _t('Forum.RSSFORUMS', 'Posts to all forums'));
+        RSSFeed::linkToFeed(
+            $this->Parent()->Link("rss/forum/$this->ID"),
+            _t('Forum.RSSFORUM', "Posts to the '{title}' forum", ['title' => $this->Title])
+        );
+        RSSFeed::linkToFeed(
+            $this->Parent()->Link("rss"),
+            _t('Forum.RSSFORUMS', 'Posts to all forums')
+        );
 
         if (!$this->canView()) {
             $messageSet = array(
@@ -797,7 +803,7 @@ class ForumPageController extends PageController
 
             $thread->incNumViews();
 
-            $posts = sprintf(_t('Forum.POSTTOTOPIC', "Posts to the %s topic"), $thread->Title);
+            $posts = _t('Forum.POSTTOTOPIC', "Posts to the {title} topic", ['title' => $thread->Title]);
 
             RSSFeed::linkToFeed($this->Link("rss") . '/thread/' . (int)$this->urlParams['ID'], $posts);
 

@@ -219,7 +219,7 @@ class Post extends DataObject
      *
      * @return string
      */
-    public function Title()
+    public function getTitle()
     {
         if ($this->isFirstPost()) {
             return $this->Thread()->Title;

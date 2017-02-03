@@ -216,7 +216,9 @@ class ForumHolderPageController extends \PageController
         $order    = (isset($_REQUEST['order'])) ? Convert::raw2xml($_REQUEST['order']) : null;
         $start    = (isset($_REQUEST['start'])) ? (int)$_REQUEST['start'] : 0;
 
-        $abstract = ($keywords) ? "<p>" . sprintf(_t('ForumHolder.SEARCHEDFOR', "You searched for '%s'."), $keywords) . "</p>" : null;
+        $abstract = ($keywords)
+            ? "<p>" . _t('ForumHolder.SEARCHEDFOR', "You searched for '{keywords}'.", ['keywords' => $keywords]) . "</p>"
+            : null;
 
         // get the results of the query from the current search engine
         $search = ForumSearch::getSearchEngine();
@@ -298,7 +300,7 @@ class ForumHolderPageController extends \PageController
             $rss = new RSSFeed(
                 $this->getRecentPosts(50, $forumID, $threadID),
                 $this->Link() . 'rss',
-                sprintf(_t('Forum.RSSFORUMPOSTSTO'), $this->Title),
+                _t('Forum.RSSFORUMPOSTSTO', ['title' => $this->Title]),
                 "",
                 "Title",
                 "RSSContent",
@@ -331,7 +333,7 @@ class ForumHolderPageController extends \PageController
                 $rss = new RSSFeed(
                     $this->getRecentPosts(50, $forumID, $threadID, $etag),
                     $this->Link() . 'rss',
-                    sprintf(_t('Forum.RSSFORUMPOSTSTO'), $this->Title),
+                    _t('Forum.RSSFORUMPOSTSTO', ['title' => $this->Title]),
                     "",
                     "Title",
                     "RSSContent",

@@ -8,9 +8,9 @@
 			<% if $NumPosts %>
 				<span class="post-count">$NumPosts
 				<% if $NumPosts == 1 %>
-					<% _t('SinglePost_ss.POST', 'Post') %>
+					<%t SinglePost_ss.POST "Post" %>
 				<% else %>
-					<% _t('SinglePost_ss.POSTS', 'Posts') %>
+					<%t SinglePost_ss.POSTS "Posts" %>
 				<% end_if %>
 				</span>
 			<% end_if %>
@@ -27,7 +27,7 @@
 		<h4><a href="$Link">$Title <img src="forum/images/right.png" alt="Link to this post" title="Link to this post" /></a></h4>
 		<p class="post-date">$Created.Long at $Created.Time
 		<% if $Updated %>
-			<strong><% _t('SinglePost_ss.LASTEDITED','Last edited:') %> $Updated.Long <% _t('SinglePost_ss.AT') %> $Updated.Time</strong>
+			<strong><%t SinglePost_ss.LASTEDITED "Last edited:" %> $Updated.Long <%t SinglePost_ss.AT "" %> $Updated.Time</strong>
 		<% end_if %></p>
 
 		<% if $EditLink || $DeleteLink %>
@@ -68,7 +68,7 @@
 
 		<% if $Attachments %>
 			<div class="attachments">
-				<strong><% _t('SinglePost_ss.ATTACHED','Attached Files') %></strong>
+				<strong><%t SinglePost_ss.ATTACHED "Attached Files" %></strong>
 				<ul class="post-attachments">
 				<% loop $Attachments %>
 					<li>

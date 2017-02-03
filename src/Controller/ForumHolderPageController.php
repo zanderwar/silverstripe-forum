@@ -2,6 +2,7 @@
 namespace SilverStripe\Forum\Controller;
 
 use SilverStripe\Control\HTTP;
+use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\RSS\RSSFeed;
 use SilverStripe\Control\Session;
@@ -39,13 +40,13 @@ class ForumHolderPageController extends \PageController
      *
      * @return void
      */
-    public function init()
+    protected function init()
     {
         parent::init();
 
-        Requirements::javascript(THIRDPARTY_DIR . "/jquery/jquery.js");
-        Requirements::javascript("forum/javascript/jquery.MultiFile.js");
-        Requirements::javascript("forum/javascript/forum.js");
+        Requirements::javascript(ADMIN_THIRDPARTY_DIR . "/jquery/jquery.js");
+        Requirements::javascript(FORUM_DIR . "/javascript/jquery.MultiFile.js");
+        Requirements::javascript(FORUM_DIR . "/javascript/forum.js");
 
         Requirements::themedCSS('Forum', 'all');
 
@@ -153,7 +154,7 @@ class ForumHolderPageController extends \PageController
         }
 
         if ($method == 'posts') {
-            $threadsQuery            = singleton('ForumThread')->buildSQL(
+            $threadsQuery            = singleton(ForumThread::class)->buildSQL(
                 "\"SiteTree\".\"ParentID\" = '" . $this->ID . "'",
                 "\"PostCount\" DESC",
                 "$start,$limit",
@@ -161,12 +162,12 @@ class ForumHolderPageController extends \PageController
             );
             $threadsQuery->select[]  = "COUNT(\"Post\".\"ID\") AS 'PostCount'";
             $threadsQuery->groupby[] = "\"ForumThread\".\"ID\"";
-            $threads                 = singleton('ForumThread')->buildDataObjectSet($threadsQuery->execute());
+            $threads                 = singleton(ForumThread::class)->buildDataObjectSet($threadsQuery->execute());
             if ($threads) {
                 $threads->setPageLimits($start, $limit, $threadsQuery->unlimitedRowCount());
             }
         } elseif ($method == 'views') {
-            $threads = DataObject::get('ForumThread', '', "\"NumViews\" DESC", '', "$start,$limit");
+            $threads = DataObject::get(ForumThread::class, '', "\"NumViews\" DESC", '', "$start,$limit");
         }
 
         return array(
@@ -208,13 +209,14 @@ class ForumHolderPageController extends \PageController
     /**
      * The search action
      *
+     * @param  HTTPRequest $request
      * @return array Returns an array to render the search results.
      */
-    public function search()
+    public function search(HTTPRequest $request)
     {
-        $keywords = (isset($_REQUEST['Search'])) ? Convert::raw2xml($_REQUEST['Search']) : null;
-        $order    = (isset($_REQUEST['order'])) ? Convert::raw2xml($_REQUEST['order']) : null;
-        $start    = (isset($_REQUEST['start'])) ? (int)$_REQUEST['start'] : 0;
+        $keywords = $request->param('Search') ? Convert::raw2xml($request->param('Search')) : null;
+        $order    = $request->param('order') ? Convert::raw2xml($request->param('order')) : null;
+        $start    = $request->param('start') ? (int)$request->param('start') : 0;
 
         $abstract = ($keywords)
             ? "<p>" . _t('ForumHolder.SEARCHEDFOR', "You searched for '{keywords}'.", ['keywords' => $keywords]) . "</p>"
@@ -252,7 +254,7 @@ class ForumHolderPageController extends \PageController
         return array(
             "Subtitle"      => DBField::create_field('Text', _t('ForumHolder.SEARCHRESULTS', 'Search results')),
             "Abstract"      => DBField::create_field('HTMLText', $abstract),
-            "Query"         => DBField::create_field('Text', $_REQUEST['Search']),
+            "Query"         => DBField::create_field('Text', $request->param('Search')),
             "Order"         => DBField::create_field('Text', ($order) ? $order : "relevance"),
             "RSSLink"       => DBField::create_field('HTMLText', $rssLink),
             "SearchResults" => $results

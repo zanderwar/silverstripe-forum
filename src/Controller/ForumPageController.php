@@ -76,16 +76,16 @@ class ForumPageController extends PageController
      *
      * @return void
      */
-    public function init()
+    protected function init()
     {
         parent::init();
         if ($this->redirectedTo()) {
             return;
         }
 
-        Requirements::javascript(THIRDPARTY_DIR . "/jquery/jquery.js");
-        Requirements::javascript("forum/javascript/Forum.js");
-        Requirements::javascript("forum/javascript/jquery.MultiFile.js");
+        Requirements::javascript(ADMIN_THIRDPARTY_DIR . "/jquery/jquery.js");
+        Requirements::javascript(FORUM_DIR . "/javascript/Forum.js");
+        Requirements::javascript(FORUM_DIR . "/javascript/jquery.MultiFile.js");
 
         Requirements::themedCSS('Forum', 'all');
 

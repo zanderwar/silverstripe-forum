@@ -27,7 +27,7 @@
 		<h4><a href="$Link">$Title <img src="forum/images/right.png" alt="Link to this post" title="Link to this post" /></a></h4>
 		<p class="post-date">$Created.Long at $Created.Time
 		<% if $Updated %>
-			<strong><%t SinglePost_ss.LASTEDITED "Last edited:" %> $Updated.Long <%t SinglePost_ss.AT "" %> $Updated.Time</strong>
+			<strong><%t SinglePost_ss.LASTEDITED "Last edited:" %> $Updated.Long <%t SinglePost_ss.AT "at" %> $Updated.Time</strong>
 		<% end_if %></p>
 
 		<% if $EditLink || $DeleteLink %>

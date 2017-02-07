@@ -14,7 +14,7 @@
 		<%t ForumMember_NotifyModerator_ss.DATEON "on" %> {$Post.LastEdited.Nice}.
 	</p>
 	<% loop $Post %>
-		<p>$Content.Parse('BBCodeParser')</p>
+		<p>$Content.Parse("SilverStripe\\BBCodeParser\\BBCodeParser")</p>
 	<% end_loop %>
 </blockquote>
 

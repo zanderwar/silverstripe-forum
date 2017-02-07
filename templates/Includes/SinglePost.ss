@@ -53,7 +53,7 @@
 			</div>
 		<% end_if %>
 		<div class="post-type">
-			$Content.Parse('BBCodeParser')
+			$Content.Parse('SilverStripe\\BBCodeParser\\BBCodeParser')
 		</div>
 
 		<% if $Thread.DisplaySignatures %>

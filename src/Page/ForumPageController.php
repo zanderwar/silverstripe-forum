@@ -4,6 +4,7 @@ namespace SilverStripe\Forum\Page;
 
 use PageController;
 use SilverStripe\Assets\Upload;
+use SilverStripe\BBCodeParser\BBCodeParser;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
@@ -719,7 +720,7 @@ class ForumPageController extends PageController
         if ($moderators && $moderators->exists()) {
             foreach ($moderators as $moderator) {
                 if ($moderator->Email) {
-                    $adminEmail = Config::inst()->get('SilverStripe\\Control\\Email\\Email', 'admin_email');
+                    $adminEmail = Config::inst()->get(Email::class, 'admin_email');
 
                     $email = new Email();
                     $email->setFrom($adminEmail);
@@ -729,14 +730,14 @@ class ForumPageController extends PageController
                     } else {
                         $email->setSubject('New post "' . $post->Title . '" in forum [' . $this->Title . ']');
                     }
-                    $email->setTemplate('ForumMember_NotifyModerator');
-                    $email->populateTemplate(new ArrayData(array(
+                    $email->setHTMLTemplate('email/ForumMember_NotifyModerator');
+                    $email->addData([
                         'NewThread' => $starting_thread,
                         'Moderator' => $moderator,
                         'Author'    => $post->Author(),
                         'Forum'     => $this,
                         'Post'      => $post
-                    )));
+                    ]);
 
                     $email->send();
                 }

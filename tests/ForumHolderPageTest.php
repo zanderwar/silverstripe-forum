@@ -2,7 +2,7 @@
 
 namespace SilverStripe\Forum\Tests;
 
-use SilverStripe\Forum\Controller\ForumHolderPageController;
+use SilverStripe\Forum\Page\ForumHolderPageController;
 use SilverStripe\Forum\Model\ForumThread;
 use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\Page\ForumHolderPage;

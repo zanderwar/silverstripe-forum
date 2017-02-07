@@ -15,10 +15,10 @@ mappings:
   Post: SilverStripe\Forum\Model\Post
   Post_Attachment: SilverStripe\Forum\Model\PostAttachment
   Forum: SilverStripe\Forum\Page\ForumPage
-  Forum_Controller: SilverStripe\Forum\Controller\ForumPageController
+  Forum_Controller: SilverStripe\Forum\Page\ForumPageController
   Forum_DataQuery: SilverStripe\Forum\Page\ForumDataQuery
   ForumHolder: SilverStripe\Forum\Page\ForumHolderPage
-  ForumHolder_Controller: SilverStripe\Forum\Controller\ForumHolderPageController
+  ForumHolder_Controller: SilverStripe\Forum\Page\ForumHolderPageController
   ForumReport_MemberSignups: SilverStripe\Forum\Report\ForumReportMemberSignups
   ForumReport_MonthlyPosts: SilverStripe\Forum\Report\ForumReportMonthlyPosts
   ForumHolderTest: SilverStripe\Forum\Tests\ForumHolderTest

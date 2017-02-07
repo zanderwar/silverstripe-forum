@@ -150,6 +150,11 @@ class ForumHolderPage extends Page
     private static $currentlyOnlineEnabled = true;
 
     /**
+     * @var string
+     */
+    private static $table_name = 'ForumHolder';
+
+    /**
      * Add relevant fields to the CMS
      *
      * @return \SilverStripe\Forms\FieldList

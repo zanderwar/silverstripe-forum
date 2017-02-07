@@ -1,5 +1,6 @@
 <?php
-namespace SilverStripe\Forum\Controller;
+
+namespace SilverStripe\Forum\Page;
 
 use PageController;
 use SilverStripe\Assets\Upload;
@@ -87,7 +88,7 @@ class ForumPageController extends PageController
         Requirements::javascript(FORUM_DIR . "/javascript/Forum.js");
         Requirements::javascript(FORUM_DIR . "/javascript/jquery.MultiFile.js");
 
-        Requirements::themedCSS('Forum', 'all');
+        Requirements::themedCSS('Forum.css');
 
         RSSFeed::linkToFeed(
             $this->Parent()->Link("rss/forum/$this->ID"),

@@ -1,5 +1,6 @@
 <?php
-namespace SilverStripe\Forum\Controller;
+
+namespace SilverStripe\Forum\Page;
 
 use SilverStripe\Control\HTTP;
 use SilverStripe\Control\HTTPRequest;
@@ -48,7 +49,7 @@ class ForumHolderPageController extends \PageController
         Requirements::javascript(FORUM_DIR . "/javascript/jquery.MultiFile.js");
         Requirements::javascript(FORUM_DIR . "/javascript/forum.js");
 
-        Requirements::themedCSS('Forum', 'all');
+        Requirements::themedCSS('Forum.css');
 
         RSSFeed::linkToFeed($this->Link("rss"), _t('ForumHolder.POSTSTOALLFORUMS', "Posts to all forums"));
 

@@ -111,6 +111,11 @@ class ForumPage extends Page
     public static $redirectPostUrlsToThread = false;
 
     /**
+     * @var string
+     */
+    private static $table_name = 'Forum';
+
+    /**
      * Check if the user can view the forum.
      *
      * @param null|Member $member
@@ -297,11 +302,9 @@ class ForumPage extends Page
      */
     public function getCMSFields()
     {
-        $self = $this;
-
-        $this->beforeUpdateCMSFields(function ($fields) use ($self) {
-            Requirements::javascript("forum/javascript/ForumAccess.js");
-            Requirements::css("forum/css/Forum_CMS.css");
+        $this->beforeUpdateCMSFields(function ($fields) {
+            Requirements::javascript(FORUM_DIR . '/javascript/ForumAccess.js');
+            Requirements::css(FORUM_DIR . '/css/Forum_CMS.css');
 
             /** @var FieldList $fields */
             $fields->addFieldToTab("Root.Access", HeaderField::create(_t('Forum.ACCESSPOST', 'Who can post to the forum?'), 2));
@@ -347,7 +350,7 @@ class ForumPage extends Page
             $moderators = GridField::create(
                 'Moderators',
                 _t('MODERATORS', 'Moderators for this forum'),
-                $self->Moderators(),
+                $this->Moderators(),
                 $moderatorsConfig
             );
 

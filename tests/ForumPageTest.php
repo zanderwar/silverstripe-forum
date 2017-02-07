@@ -8,7 +8,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\Security\Member;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\Forum\Controller\ForumPageController;
+use SilverStripe\Forum\Page\ForumPageController;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\DataModel;
 use SilverStripe\Forum\Model\Post;

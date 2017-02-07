@@ -1,0 +1,11 @@
+---
+Name: forumlegacy
+---
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    ForumCategory: SilverStripe\Forum\Model\ForumCategory
+    ForumThread: SilverStripe\Forum\Model\ForumThread
+    ForumThreadSubscription: SilverStripe\Forum\Model\ForumThreadSubscription
+    Post: SilverStripe\Forum\Model\Post
+    Forum: SilverStripe\Forum\Page\ForumPage
+    ForumHolder: SilverStripe\Forum\Page\ForumHolderPage

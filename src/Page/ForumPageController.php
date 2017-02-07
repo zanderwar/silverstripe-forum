@@ -566,7 +566,7 @@ class ForumPageController extends PageController
         // a new thread
         $thread = false;
         if (isset($data['ThreadID'])) {
-            $thread = DataObject::get_by_id('ForumThread', $data['ThreadID']);
+            $thread = DataObject::get_by_id(ForumThread::class, $data['ThreadID']);
         }
 
         // If this is a simple edit the post then handle it here. Look up the correct post,
@@ -958,12 +958,12 @@ class ForumPageController extends PageController
 
         if (isset($this->urlParams['ID'])) {
             /** @var Post $post */
-            if ($post = DataObject::get_by_id('Post', (int)$this->urlParams['ID'])) {
+            if ($post = DataObject::get_by_id(Post::class, (int)$this->urlParams['ID'])) {
                 if ($post->canDelete()) {
                     // delete the whole thread if this is the first one. The delete action
                     // on thread takes care of the posts.
                     if ($post->isFirstPost()) {
-                        $thread = DataObject::get_by_id("ForumThread", $post->ThreadID);
+                        $thread = DataObject::get_by_id(ForumThread::class, $post->ThreadID);
                         $thread->delete();
                     } else {
                         // delete the post

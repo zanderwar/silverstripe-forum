@@ -453,7 +453,10 @@ class ForumPageController extends PageController
             return false;
         }
 
-        $forumBBCodeHint = $this->renderWith('Forum_BBCodeHint');
+        $forumBBCodeHint = $this->renderWith([
+            'type' => 'Includes',
+            'Forum_BBCodeHint'
+        ]);
 
         $fields = new FieldList(
             ($post && $post->isFirstPost() || !$thread) ? new TextField("Title", _t('Forum.FORUMTHREADTITLE', 'Title')) : new ReadonlyField('Title', _t('Forum.FORUMTHREADTITLE', ''), 'Re:' . $thread->Title),

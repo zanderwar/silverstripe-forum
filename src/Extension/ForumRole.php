@@ -2,7 +2,21 @@
 
 namespace SilverStripe\Forum\Extension;
 
+use SilverStripe\Assets\Image;
 use SilverStripe\Control\Email\Email;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\CompositeField;
+use SilverStripe\Forms\ConfirmedPasswordField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\EmailField;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FileField;
+use SilverStripe\Forms\HeaderField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\Validator;
 use SilverStripe\Forum\Form\CheckableOption;
 use SilverStripe\Forum\Form\ForumCountryDropdownField;
@@ -10,28 +24,16 @@ use SilverStripe\Forum\Model\Post;
 use SilverStripe\Forum\Page\ForumHolderPage;
 use SilverStripe\Forum\Page\ForumPage;
 use SilverStripe\Forum\Page\ForumHolderPageController;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
-use SilverStripe\ORM\Queries\SQLSelect;
-use SilverStripe\Security\Permission;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\Forms\FileField;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Forms\HeaderField;
-use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\TextField;
-use SilverStripe\Forms\EmailField;
-use SilverStripe\Forms\ConfirmedPasswordField;
-use SilverStripe\Forms\CompositeField;
-use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\RequiredFields;
-use SilverStripe\Forms\CheckboxSetField;
-use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\Member;
-use SilverStripe\Assets\Image;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Security\Permission;
+use SilverStripe\View\SSViewer;
+use SilverStripe\View\ThemeResourceLoader;
 use Zend_Locale;
 
 /**
@@ -389,16 +391,17 @@ class ForumRole extends DataExtension
      * Checks to see if the current user has an avatar, if they do use it
      * otherwise query gravatar.com
      *
-     * @return String
+     * @return string
      */
     public function getFormattedAvatar()
     {
-        $default = "forum/images/forummember_holder.gif";
-        $currentTheme = Config::inst()->get('SilverStripe\\View\\SSViewer', 'theme');
+        $default = '';
 
-        if (file_exists('themes/' . $currentTheme . '_forum/images/forummember_holder.gif')) {
-            $default = 'themes/' . $currentTheme . '_forum/images/forummember_holder.gif';
+        $themes = SSViewer::get_themes();
+        if ($defaultPath = ThemeResourceLoader::instance()->findThemedResource('images/forummember_holder.gif', $themes)) {
+            $default = $defaultPath;
         }
+
         // if they have uploaded an image
         if ($this->owner->AvatarID) {
             $avatar = Image::get()->byID($this->owner->AvatarID);
@@ -406,7 +409,7 @@ class ForumRole extends DataExtension
                 return $default;
             }
 
-            $resizedAvatar = $avatar->SetWidth(80);
+            $resizedAvatar = $avatar->ScaleWidth(80);
             if (!$resizedAvatar) {
                 return $default;
             }

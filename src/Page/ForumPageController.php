@@ -865,7 +865,7 @@ class ForumPageController extends PageController
             $id = Convert::raw2sql($this->urlParams['ID']);
 
             if (is_numeric($id)) {
-                if ($thread = DataObject::get_by_id('ForumThread', $id)) {
+                if ($thread = DataObject::get_by_id(ForumThread::class, $id)) {
                     if (!$thread->canView()) {
                         Security::permissionFailure($this);
 
